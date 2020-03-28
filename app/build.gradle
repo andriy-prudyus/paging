@@ -1,0 +1,71 @@
+apply plugin: 'com.android.application'
+apply from: "$rootDir/android.gradle"
+apply plugin: 'androidx.navigation.safeargs'
+
+android {
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.example.paging"
+        versionCode 1
+        versionName "1.0"
+    }
+
+    viewBinding.enabled = true
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            buildConfigField("Boolean", "isLoggingEnabled", "true")
+        }
+
+        release {
+            minifyEnabled true
+            buildConfigField("Boolean", "isLoggingEnabled", "false")
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(':network')
+    implementation project(':database')
+
+    implementation libraries.appcompat
+    implementation libraries.core_ktx
+    implementation libraries.material
+    implementation libraries.constraintlayout
+    implementation libraries.swiperefreshlayout
+
+    implementation libraries.navigation_fragment
+    implementation libraries.navigation_fragment_ktx
+    implementation libraries.navigation_ui
+    implementation libraries.navigation_ui_ktx
+
+    implementation libraries.paging
+
+    implementation libraries.coil
+
+    implementation libraries.lifecycle_extensions
+    implementation libraries.lifecycle_livedata
+
+    implementation libraries.coroutines_core
+    implementation libraries.coroutines_android
+
+    implementation libraries.dagger
+    compileOnly libraries.assisted_inject_dagger
+    kapt annotationProcessors.dagger_compiler
+    kapt annotationProcessors.assisted_inject_dagger_compiler
+
+    implementation libraries.timber
+    implementation libraries.stetho
+
+    debugImplementation libraries.leakcanary
+
+    testImplementation testLibraries.junit
+
+    androidTestImplementation testLibraries.ext_junit
+    androidTestImplementation testLibraries.espresso_core
+}

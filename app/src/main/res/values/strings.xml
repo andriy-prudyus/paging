@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Paging</string>
+    <string name="no_data">No data</string>
+    <string name="items">Items</string>
+</resources>

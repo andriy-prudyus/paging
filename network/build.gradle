@@ -1,0 +1,16 @@
+apply plugin: 'com.android.library'
+apply from: "$rootDir/android.gradle"
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation libraries.dagger
+    kapt annotationProcessors.dagger_compiler
+
+    implementation libraries.retrofit
+    api libraries.retrofit_converter_gson
+
+    implementation libraries.stetho_okhttp
+    implementation libraries.timber
+    implementation libraries.logging_interceptor
+}
