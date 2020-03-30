@@ -24,7 +24,7 @@ class ItemListRepository @Inject constructor(
         }
     }
 
-    suspend fun loadCachedItems(pageIndex: Int, pageSize: Int): List<Item> {
+    suspend fun getCachedItems(pageIndex: Int, pageSize: Int): List<Item> {
         return withContext(Dispatchers.IO) {
             dbMediator.itemDao.select(pageSize, (pageIndex - 1) * pageSize).toItems()
         }

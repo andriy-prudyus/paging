@@ -3,7 +3,6 @@ package com.example.paging.ui.items.list.viewModel
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.example.paging.architecture.state.PagingState
 import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.AssistedSavedStateViewModelFactory
 import com.example.paging.ui.items.list.dataSource.ItemListDataSourceFactory
@@ -33,22 +32,6 @@ class ItemListViewModel @AssistedInject constructor(
         override fun create(state: SavedStateHandle): ItemListViewModel
     }
 
-    private val loadInitialState = MutableLiveData<PagingState.Initial<Int, Item>>()
-    private val loadAfterState = MutableLiveData<PagingState.After<Int, Item>>()
-    private val loadBeforeState = MutableLiveData<PagingState.Before<Int, Item>>()
-
-    private fun onLoadInitialState(state: PagingState.Initial<Int, Item>) {
-        loadInitialState.postValue(state)
-    }
-
-    private fun onLoadAfterState(state: PagingState.After<Int, Item>) {
-        loadAfterState.postValue(state)
-    }
-
-    private fun onLoadBeforeState(state: PagingState.Before<Int, Item>) {
-        loadBeforeState.postValue(state)
-    }
-
     private val exceptionHandler = CoroutineExceptionHandler { _, e ->
         items.value = State.Failure(e)
     }
@@ -57,10 +40,7 @@ class ItemListViewModel @AssistedInject constructor(
         val dataSourceFactory = ItemListDataSourceFactory(
             calculateInitialPage(state.get<Int>(ITEM_POSITION) ?: 0, pagedListConfig.pageSize),
             viewModelScope + exceptionHandler,
-            repository,
-            this::onLoadInitialState,
-            this::onLoadAfterState,
-            this::onLoadBeforeState
+            repository
         )
         LivePagedListBuilder(dataSourceFactory, pagedListConfig).build()
     }
@@ -74,12 +54,6 @@ class ItemListViewModel @AssistedInject constructor(
             value = State.Loading()
         }
     }
-
-    fun loadInitial(): LiveData<PagingState.Initial<Int, Item>> = loadInitialState
-
-    fun loadAfter(): LiveData<PagingState.After<Int, Item>> = loadAfterState
-
-    fun loadBefore(): LiveData<PagingState.Before<Int, Item>> = loadBeforeState
 
     fun refresh(): LiveData<State<Any>> {
         return MutableLiveData<State<Any>>().also { result ->
