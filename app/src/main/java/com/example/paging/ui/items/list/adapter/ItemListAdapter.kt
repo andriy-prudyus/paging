@@ -2,8 +2,8 @@ package com.example.paging.ui.items.list.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.databinding.ListItemBinding
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.utils.load
@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 class ItemListAdapter @Inject constructor(
     itemCallback: DiffUtilItemCallback
-) : PagedListAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
+) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
 
     interface ActionListener {
         fun onItemClicked(item: Item)
@@ -19,7 +19,7 @@ class ItemListAdapter @Inject constructor(
 
     var listener: ActionListener? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+    override fun onCreateRegularViewHolder(parent: ViewGroup): ItemViewHolder {
         return ItemViewHolder(
             ListItemBinding.inflate(
                 LayoutInflater.from(parent.context),
@@ -29,7 +29,7 @@ class ItemListAdapter @Inject constructor(
         )
     }
 
-    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
+    override fun onBindRegularViewHolder(holder: ItemViewHolder, position: Int) {
         getItem(position)?.let { holder.bind(it) }
     }
 

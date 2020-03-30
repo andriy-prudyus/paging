@@ -15,6 +15,7 @@ import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFac
 import com.example.paging.architecture.viewModel.ObserveSingleResult
 import com.example.paging.databinding.FragmentItemListBinding
 import com.example.paging.ui.items.list.adapter.ItemListAdapter
+import com.example.paging.ui.items.list.dataSource.ItemListDataSource
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.ui.items.list.viewModel.ItemListViewModel
 import com.example.paging.utils.showError
@@ -62,9 +63,6 @@ class ItemListFragment(
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         getItems()
-        observeLoadInitial()
-        observeLoadAfter()
-        observeLoadBefore()
     }
 
     private fun getItems() {
@@ -76,6 +74,12 @@ class ItemListFragment(
                     binding.placeholder.isVisible = false
                 }
                 is State.Success -> {
+                    (state.data.dataSource as? ItemListDataSource)?.let {
+                        observeLoadInitial(it)
+                        observeLoadAfter(it)
+                        observeLoadBefore(it)
+                    }
+
                     itemListAdapter.submitList(state.data)
                 }
                 is State.Failure -> {
@@ -87,8 +91,8 @@ class ItemListFragment(
         })
     }
 
-    private fun observeLoadInitial() {
-        viewModel.loadInitial().observe(viewLifecycleOwner, Observer { state ->
+    private fun observeLoadInitial(dataSource: ItemListDataSource) {
+        dataSource.loadInitial().observe(viewLifecycleOwner, Observer { state ->
             when (state) {
                 is PagingState.Initial.Loading -> {
                     binding.recyclerView.isVisible = false
@@ -109,14 +113,15 @@ class ItemListFragment(
         })
     }
 
-    private fun observeLoadAfter() {
-        viewModel.loadAfter().observe(viewLifecycleOwner, Observer { state ->
+    private fun observeLoadAfter(dataSource: ItemListDataSource) {
+        dataSource.loadAfter().observe(viewLifecycleOwner, Observer { state ->
             Timber.e("observeLoadAfter = $state")
+            itemListAdapter.loadAfterState = state
         })
     }
 
-    private fun observeLoadBefore() {
-        viewModel.loadBefore().observe(viewLifecycleOwner, Observer { state ->
+    private fun observeLoadBefore(dataSource: ItemListDataSource) {
+        dataSource.loadBefore().observe(viewLifecycleOwner, Observer { state ->
             Timber.e("observeLoadBefore = $state")
         })
     }
