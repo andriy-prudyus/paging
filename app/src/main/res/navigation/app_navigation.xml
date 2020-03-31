@@ -2,18 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/app_navigation"
-    app:startDestination="@id/splashFragment">
-
-    <fragment
-        android:id="@+id/splashFragment"
-        android:name="com.example.paging.ui.splash.view.SplashFragment">
-
-        <action
-            android:id="@+id/toItemListFragment"
-            app:destination="@id/itemListFragment"
-            app:popUpTo="@id/splashFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
+    app:startDestination="@id/itemListFragment">
 
     <fragment
         android:id="@+id/itemListFragment"
