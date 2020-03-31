@@ -1,8 +1,17 @@
 package com.example.paging.architecture.exception
 
-import java.io.IOException
+/**
+ * Wrapper for an exception
+ *
+ * @param code error code
+ * @param originalThrowable exception that has to be wrapped
+ */
+class AppException(
+    val code: Code,
+    originalThrowable: Throwable? = null
+) : Exception(originalThrowable) {
 
-class AppException(val code: Code) : IOException(code.name) {
+    override val message: String? = "errorCode=${code.name}; message=${originalThrowable?.message}"
 
     enum class Code {
         INCORRECT_INITIAL_PAGE_INDEX,

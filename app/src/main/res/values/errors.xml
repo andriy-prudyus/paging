@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_unknown">Unknown error</string>
+    <string name="error_incorrect_initial_page_index">Incorrect initial page index</string>
+    <string name="error_unknown_expected_items_count">Unknown expected items count</string>
+    <string name="error_cached_items_more_than_expected">Cached items count is more than expected</string>
+    <string name="error_incorrect_item_id">Incorrect item ID</string>
+</resources>
