@@ -5,15 +5,13 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlin.coroutines.CoroutineContext
 
 class LifecycleAwareMainScope : CoroutineScope, LifecycleObserver {
 
-    private val job = SupervisorJob()
-
-    override val coroutineContext: CoroutineContext = Dispatchers.Main + job
+    override val coroutineContext: CoroutineContext = Dispatchers.Main + Job()
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun destroy() {
