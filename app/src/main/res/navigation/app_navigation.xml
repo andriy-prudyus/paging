@@ -19,5 +19,17 @@
         android:id="@+id/itemListFragment"
         android:name="com.example.paging.ui.items.list.view.ItemListFragment">
 
+        <action
+            android:id="@+id/toItemDetailsFragment"
+            app:destination="@id/itemDetailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/itemDetailsFragment"
+        android:name="com.example.paging.ui.items.details.view.ItemDetailsFragment">
+
+        <argument
+            android:name="itemId"
+            app:argType="long" />
     </fragment>
 </navigation>

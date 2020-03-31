@@ -9,8 +9,10 @@ fun GetItemsResponse.toDbEntities(): Pair<List<DbItem>, Int> {
     return items.map { it.toDbEntity() } to itemsCount
 }
 
+private fun ItemDto.toDbEntity(): DbItem = DbItem(id, name, imageUrl)
+
 fun List<DbItem>.toItems(): List<Item> {
-    return this.map { Item(it.id, it.name, it.imageUrl) }
+    return map { it.toItem() }
 }
 
-private fun ItemDto.toDbEntity(): DbItem = DbItem(id, name, imageUrl)
+fun DbItem.toItem(): Item = Item(id, name, imageUrl)

@@ -18,12 +18,14 @@ import kotlinx.coroutines.plus
 import timber.log.Timber
 
 class ItemListViewModel @AssistedInject constructor(
-    @Assisted private val state: SavedStateHandle,
+    @Assisted val state: SavedStateHandle,
     private val repository: ItemListRepository
 ) : ViewModel() {
 
     companion object {
-        private const val ITEM_POSITION = "item_position"
+        const val ITEM_POSITION = "item_position"
+        const val ITEM_TOP_OFFSET = "item_top_offset"
+
         private val pagedListConfig = pagedListConfig()
     }
 
@@ -32,27 +34,28 @@ class ItemListViewModel @AssistedInject constructor(
         override fun create(state: SavedStateHandle): ItemListViewModel
     }
 
-    private val exceptionHandler = CoroutineExceptionHandler { _, e ->
-        items.value = State.Failure(e)
-    }
+    val itemPosition: Int
+        get() = state.get<Int>(ITEM_POSITION) ?: 0
 
-    private val pagedList: LiveData<PagedList<Item>> by lazy {
-        val dataSourceFactory = ItemListDataSourceFactory(
-            calculateInitialPage(state.get<Int>(ITEM_POSITION) ?: 0, pagedListConfig.pageSize),
-            viewModelScope + exceptionHandler,
-            repository
-        )
-        LivePagedListBuilder(dataSourceFactory, pagedListConfig).build()
-    }
+    val itemTopOffset: Int
+        get() = state.get<Int>(ITEM_TOP_OFFSET) ?: 0
 
-    private val items: MutableLiveData<State<PagedList<Item>>> = Transformations.map(pagedList) {
-        State.Success(it)
-    } as MutableLiveData<State<PagedList<Item>>>
-
+    @Suppress("UNCHECKED_CAST")
     fun items(): LiveData<State<PagedList<Item>>> {
-        return items.apply {
+        return (Transformations.map(createPagedList()) {
+            State.Success(it)
+        } as MutableLiveData<State<PagedList<Item>>>).apply {
             value = State.Loading()
         }
+    }
+
+    private fun createPagedList(): LiveData<PagedList<Item>> {
+        val dataSourceFactory = ItemListDataSourceFactory(
+            calculateInitialPage(state.get<Int>(ITEM_POSITION) ?: 0, pagedListConfig.pageSize),
+            viewModelScope,
+            repository
+        )
+        return LivePagedListBuilder(dataSourceFactory, pagedListConfig).build()
     }
 
     fun refresh(): LiveData<State<Any>> {
@@ -68,10 +71,5 @@ class ItemListViewModel @AssistedInject constructor(
                 result.value = State.Success(Any())
             }
         }
-    }
-
-    fun saveItemPosition(position: Int) {
-        Timber.e("saveItemPosition = $position")
-        state.set(ITEM_POSITION, position)
     }
 }

@@ -8,23 +8,25 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.paging.architecture.state.PagingState
 import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFactory
 import com.example.paging.architecture.viewModel.ObserveSingleResult
 import com.example.paging.databinding.FragmentItemListBinding
+import com.example.paging.ui.items.list.adapter.DiffUtilItemCallback
 import com.example.paging.ui.items.list.adapter.ItemListAdapter
 import com.example.paging.ui.items.list.dataSource.ItemListDataSource
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.ui.items.list.viewModel.ItemListViewModel
+import com.example.paging.utils.saveRecyclerViewState
 import com.example.paging.utils.showError
 import com.example.paging.utils.showErrorSnackbar
-import timber.log.Timber
 
 class ItemListFragment(
     private val viewModelFactory: InjectingSavedStateViewModelFactory,
-    private val itemListAdapter: ItemListAdapter
+    private val diffUtilItemCallback: DiffUtilItemCallback
 ) : Fragment(), ItemListAdapter.ActionListener {
 
     private val viewModel by viewModels<ItemListViewModel> { viewModelFactory.create(this) }
@@ -52,7 +54,10 @@ class ItemListFragment(
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             isMotionEventSplittingEnabled = false
-            adapter = itemListAdapter.apply { listener = this@ItemListFragment }
+
+            adapter = ItemListAdapter(diffUtilItemCallback).apply {
+                listener = this@ItemListFragment
+            }
         }
     }
 
@@ -80,7 +85,13 @@ class ItemListFragment(
                         observeLoadBefore(it)
                     }
 
-                    itemListAdapter.submitList(state.data)
+                    (binding.recyclerView.adapter as? ItemListAdapter)?.submitList(state.data) {
+                        (binding.recyclerView.layoutManager as LinearLayoutManager)
+                            .scrollToPositionWithOffset(
+                                viewModel.itemPosition,
+                                viewModel.itemTopOffset
+                            )
+                    }
                 }
                 is State.Failure -> {
                     binding.recyclerView.isVisible = false
@@ -115,14 +126,13 @@ class ItemListFragment(
 
     private fun observeLoadAfter(dataSource: ItemListDataSource) {
         dataSource.loadAfter().observe(viewLifecycleOwner, Observer { state ->
-            Timber.e("observeLoadAfter = $state")
-            itemListAdapter.loadAfterState = state
+            (binding.recyclerView.adapter as? ItemListAdapter)?.loadAfterState = state
         })
     }
 
     private fun observeLoadBefore(dataSource: ItemListDataSource) {
         dataSource.loadBefore().observe(viewLifecycleOwner, Observer { state ->
-            Timber.e("observeLoadBefore = $state")
+            (binding.recyclerView.adapter as? ItemListAdapter)?.loadBeforeState = state
         })
     }
 
@@ -133,7 +143,8 @@ class ItemListFragment(
                     when (state) {
                         is State.Success -> {
                             binding.swipeRefreshLayout.isRefreshing = false
-                            itemListAdapter.currentList?.dataSource?.invalidate()
+                            (binding.recyclerView.adapter as? ItemListAdapter)?.currentList
+                                ?.dataSource?.invalidate()
                         }
                         is State.Failure -> {
                             binding.swipeRefreshLayout.isRefreshing = false
@@ -146,14 +157,11 @@ class ItemListFragment(
     }
 
     override fun onItemClicked(item: Item) {
-        TODO("Not yet implemented")
+        findNavController().navigate(ItemListFragmentDirections.toItemDetailsFragment(item.id))
     }
 
     override fun onPause() {
         super.onPause()
-
-        viewModel.saveItemPosition(
-            (binding.recyclerView.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
-        )
+        viewModel.saveRecyclerViewState(binding.recyclerView)
     }
 }

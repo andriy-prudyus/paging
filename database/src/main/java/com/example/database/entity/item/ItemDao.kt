@@ -14,6 +14,9 @@ abstract class ItemDao(db: Database) : BaseDao<DbItem>(db) {
     @Query("SELECT COUNT(id) FROM DbItem")
     abstract suspend fun selectCount(): Int
 
+    @Query("SELeCT * FROM DbItem WHERE id = :itemId")
+    abstract suspend fun selectItem(itemId: Long): DbItem?
+
     @Query("DELETE FROM DbItem")
     abstract suspend fun delete(): Int
 }
