@@ -12,6 +12,7 @@ import com.example.paging.architecture.state.PagingState.After
 import com.example.paging.architecture.state.PagingState.Before
 import com.example.paging.databinding.ListItemFailureBinding
 import com.example.paging.databinding.ListItemLoadingBinding
+import com.example.paging.utils.localizedErrorMessage
 
 abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
     callback: DiffUtil.ItemCallback<T>
@@ -171,7 +172,7 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
         }
 
         fun bind(throwable: Throwable) {
-            binding.textView.text = throwable.localizedMessage
+            binding.textView.setText(localizedErrorMessage(throwable))
         }
 
         override fun onClick(v: View?) {

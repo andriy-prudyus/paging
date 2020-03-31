@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import timber.log.Timber
 import kotlin.math.ceil
 
 abstract class BaseDataSource<V, N>(
@@ -39,6 +40,7 @@ abstract class BaseDataSource<V, N>(
         callback: LoadInitialCallback<Int, V>
     ) {
         val exceptionHandler = CoroutineExceptionHandler { _, e ->
+            Timber.e(e)
             loadInitial.postValue(Initial.Failure(params, callback, e))
         }
 
@@ -77,6 +79,7 @@ abstract class BaseDataSource<V, N>(
 
     final override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, V>) {
         val exceptionHandler = CoroutineExceptionHandler { _, e ->
+            Timber.e(e)
             loadAfter.postValue(After.Failure(params, callback, e))
         }
 
@@ -113,6 +116,7 @@ abstract class BaseDataSource<V, N>(
 
     final override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<Int, V>) {
         val exceptionHandler = CoroutineExceptionHandler { _, e ->
+            Timber.e(e)
             loadBefore.postValue(Before.Failure(params, callback, e))
         }
 

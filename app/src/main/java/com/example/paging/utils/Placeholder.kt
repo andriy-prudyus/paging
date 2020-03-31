@@ -26,6 +26,6 @@ fun Placeholder.showError(error: Throwable) {
         isVisible = true
     }
 
-    binding.textView.setText(error.localizedMessage)
+    binding.textView.setText(localizedErrorMessage(error))
     isVisible = true
 }
