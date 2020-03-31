@@ -1,15 +1,15 @@
 package com.example.paging.ui.items.list.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.databinding.ListItemBinding
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.utils.load
-import javax.inject.Inject
 
-class ItemListAdapter @Inject constructor(
+class ItemListAdapter(
     itemCallback: DiffUtilItemCallback
 ) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
 
@@ -35,11 +35,22 @@ class ItemListAdapter @Inject constructor(
 
     inner class ItemViewHolder(
         private val binding: ListItemBinding
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+
+        private lateinit var item: Item
+
+        init {
+            binding.root.setOnClickListener(this)
+        }
 
         fun bind(item: Item) {
+            this.item = item
             binding.nameTextView.text = item.name
             binding.imageView.load(item.imageUrl)
+        }
+
+        override fun onClick(v: View?) {
+            listener?.onItemClicked(item)
         }
     }
 }
