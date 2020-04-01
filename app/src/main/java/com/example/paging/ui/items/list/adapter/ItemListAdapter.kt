@@ -3,15 +3,28 @@ package com.example.paging.ui.items.list.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.databinding.ListItemBinding
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.utils.load
 
-class ItemListAdapter(
-    itemCallback: DiffUtilItemCallback
-) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
+class ItemListAdapter :
+    PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
+
+    companion object {
+        private val itemCallback = object : DiffUtil.ItemCallback<Item>() {
+
+            override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
 
     interface ActionListener {
         fun onItemClicked(item: Item)

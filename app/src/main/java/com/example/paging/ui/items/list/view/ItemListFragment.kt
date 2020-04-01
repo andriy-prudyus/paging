@@ -15,7 +15,6 @@ import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFactory
 import com.example.paging.architecture.viewModel.ObserveSingleResult
 import com.example.paging.databinding.FragmentItemListBinding
-import com.example.paging.ui.items.list.adapter.DiffUtilItemCallback
 import com.example.paging.ui.items.list.adapter.ItemListAdapter
 import com.example.paging.ui.items.list.dataSource.ItemListDataSource
 import com.example.paging.ui.items.list.model.Item
@@ -25,8 +24,7 @@ import com.example.paging.utils.showError
 import com.example.paging.utils.showErrorSnackbar
 
 class ItemListFragment(
-    private val viewModelFactory: InjectingSavedStateViewModelFactory,
-    private val diffUtilItemCallback: DiffUtilItemCallback
+    private val viewModelFactory: InjectingSavedStateViewModelFactory
 ) : Fragment(), ItemListAdapter.ActionListener {
 
     private val viewModel by viewModels<ItemListViewModel> { viewModelFactory.create(this) }
@@ -55,7 +53,7 @@ class ItemListFragment(
             layoutManager = LinearLayoutManager(context)
             isMotionEventSplittingEnabled = false
 
-            adapter = ItemListAdapter(diffUtilItemCallback).apply {
+            adapter = ItemListAdapter().apply {
                 listener = this@ItemListFragment
             }
         }
