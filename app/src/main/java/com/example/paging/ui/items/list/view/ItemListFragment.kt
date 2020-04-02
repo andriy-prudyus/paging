@@ -23,7 +23,6 @@ import com.example.paging.ui.items.list.viewModel.ItemListViewModel
 import com.example.paging.utils.saveRecyclerViewState
 import com.example.paging.utils.showError
 import com.example.paging.utils.showErrorSnackbar
-import kotlinx.android.synthetic.main.fragment_item_list.*
 import timber.log.Timber
 
 class ItemListFragment(
@@ -32,7 +31,7 @@ class ItemListFragment(
 
     private val viewModel by viewModels<ItemListViewModel> { viewModelFactory.create(this) }
 
-    private var binding by AutoClearedValue<FragmentItemListBinding>()
+    private var binding by AutoClearedValue<FragmentItemListBinding> { viewLifecycleOwner }
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -15,7 +15,8 @@ fun ItemListViewModel.saveRecyclerViewState(recyclerView: RecyclerView) {
     val itemTopOffset = layoutManager.findViewByPosition(itemPosition)?.top ?: 0
     val count = recyclerView.adapter?.itemCount ?: 0
     val savedPage = state.get<Int>(PAGE) ?: 1
-    val page = ceil(itemPosition.toDouble() / ItemListViewModel.pagedListConfig.pageSize.toDouble()).toInt()
+    val page =
+        ceil(itemPosition.toDouble() / ItemListViewModel.pagedListConfig.pageSize.toDouble()).toInt()
 
     val pos = itemPosition % ItemListViewModel.pagedListConfig.pageSize
     state.run {
