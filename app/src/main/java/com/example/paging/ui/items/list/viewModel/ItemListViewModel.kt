@@ -8,7 +8,6 @@ import com.example.paging.architecture.viewModel.AssistedSavedStateViewModelFact
 import com.example.paging.ui.items.list.dataSource.ItemListDataSourceFactory
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.ui.items.list.repository.ItemListRepository
-import com.example.paging.utils.calculateInitialPage
 import com.example.paging.utils.pagedListConfig
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
@@ -23,10 +22,11 @@ class ItemListViewModel @AssistedInject constructor(
 ) : ViewModel() {
 
     companion object {
+        const val PAGE = "page"
         const val ITEM_POSITION = "item_position"
         const val ITEM_TOP_OFFSET = "item_top_offset"
 
-        private val pagedListConfig = pagedListConfig()
+        val pagedListConfig = pagedListConfig()
     }
 
     @AssistedInject.Factory
@@ -51,7 +51,7 @@ class ItemListViewModel @AssistedInject constructor(
 
     private fun createPagedList(): LiveData<PagedList<Item>> {
         val dataSourceFactory = ItemListDataSourceFactory(
-            calculateInitialPage(state.get<Int>(ITEM_POSITION) ?: 0, pagedListConfig.pageSize),
+            (state.get<Int>(PAGE) ?: 1).also { Timber.e("createPagedList = $it") },
             viewModelScope,
             repository
         )

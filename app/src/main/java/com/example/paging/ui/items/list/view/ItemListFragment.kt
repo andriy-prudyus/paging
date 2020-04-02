@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState
 import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFactory
@@ -22,6 +23,8 @@ import com.example.paging.ui.items.list.viewModel.ItemListViewModel
 import com.example.paging.utils.saveRecyclerViewState
 import com.example.paging.utils.showError
 import com.example.paging.utils.showErrorSnackbar
+import kotlinx.android.synthetic.main.fragment_item_list.*
+import timber.log.Timber
 
 class ItemListFragment(
     private val viewModelFactory: InjectingSavedStateViewModelFactory
@@ -29,17 +32,16 @@ class ItemListFragment(
 
     private val viewModel by viewModels<ItemListViewModel> { viewModelFactory.create(this) }
 
-    private lateinit var binding: FragmentItemListBinding
+    private var binding by AutoClearedValue<FragmentItemListBinding>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return FragmentItemListBinding.inflate(inflater, container, false).let {
-            binding = it
-            it.root
-        }
+        return FragmentItemListBinding.inflate(inflater, container, false)
+            .also { binding = it }
+            .root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,7 +55,7 @@ class ItemListFragment(
             layoutManager = LinearLayoutManager(context)
             isMotionEventSplittingEnabled = false
 
-            adapter = ItemListAdapter().apply {
+            adapter = ItemListAdapter(this@ItemListFragment).apply {
                 listener = this@ItemListFragment
             }
         }
@@ -84,6 +86,7 @@ class ItemListFragment(
                     }
 
                     (binding.recyclerView.adapter as? ItemListAdapter)?.submitList(state.data) {
+                        Timber.e("submitList = ${viewModel.itemPosition}, ${viewModel.itemTopOffset}")
                         (binding.recyclerView.layoutManager as LinearLayoutManager)
                             .scrollToPositionWithOffset(
                                 viewModel.itemPosition,

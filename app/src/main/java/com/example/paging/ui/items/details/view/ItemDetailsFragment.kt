@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.paging.R
+import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFactory
 import com.example.paging.databinding.FragmentItemDetailsBinding
@@ -26,15 +27,16 @@ class ItemDetailsFragment(
         viewModelFactory.create(this, arguments)
     }
 
-    private lateinit var binding: FragmentItemDetailsBinding
+    private var binding by AutoClearedValue<FragmentItemDetailsBinding>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentItemDetailsBinding.inflate(inflater, container, false)
-        return binding.root
+        return FragmentItemDetailsBinding.inflate(inflater, container, false)
+            .also { binding = it }
+            .root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

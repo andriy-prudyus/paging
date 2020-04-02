@@ -3,15 +3,21 @@ package com.example.paging.ui.items.list.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.OnLifecycleEvent
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.databinding.ListItemBinding
 import com.example.paging.ui.items.list.model.Item
-import com.example.paging.utils.load
+import timber.log.Timber
 
-class ItemListAdapter :
-    PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
+class ItemListAdapter(
+    lifecycleOwner: LifecycleOwner
+) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback),
+    LifecycleObserver {
 
     companion object {
         private val itemCallback = object : DiffUtil.ItemCallback<Item>() {
@@ -26,11 +32,25 @@ class ItemListAdapter :
         }
     }
 
+    init {
+        lifecycleOwner.lifecycle.addObserver(this)
+    }
+
     interface ActionListener {
         fun onItemClicked(item: Item)
     }
 
     var listener: ActionListener? = null
+
+//    private var lifecycleRegistry = LifecycleRegistry(this)
+
+//    private var binding by AutoClearedValue<ItemViewHolder>()
+//    private var binding: ListItemBinding? = null
+
+    /*override fun getLifecycle(): Lifecycle {
+        Timber.e("getLifecycle")
+        return lifecycleRegistry
+    }*/
 
     override fun onCreateRegularViewHolder(parent: ViewGroup): ItemViewHolder {
         return ItemViewHolder(
@@ -47,12 +67,13 @@ class ItemListAdapter :
     }
 
     inner class ItemViewHolder(
-        private val binding: ListItemBinding
-    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+        private var binding: ListItemBinding
+    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener, LifecycleObserver {
 
         private lateinit var item: Item
 
         init {
+//            fragment.viewLifecycleOwner.lifecycle.addObserver(this)
             binding.root.setOnClickListener(this)
         }
 
@@ -65,5 +86,18 @@ class ItemListAdapter :
         override fun onClick(v: View?) {
             listener?.onItemClicked(item)
         }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        fun onDestroy() {
+            Timber.e("onDestroy")
+            binding = null
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun onDestroy() {
+        Timber.e("onDestroy")
+//        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+//        binding = null
     }
 }
