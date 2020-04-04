@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="colorTextRegular" />
-    <attr name="colorTextInactive" />
+    <attr name="colorFragmentBackground" format="color" />
+    <attr name="colorItemBackground" format="color" />
 
-    <attr name="colorIconRegular" />
+    <attr name="colorTextRegular" format="color" />
+    <attr name="colorTextInactive" format="color" />
+
+    <attr name="colorIconRegular" format="color" />
 </resources>

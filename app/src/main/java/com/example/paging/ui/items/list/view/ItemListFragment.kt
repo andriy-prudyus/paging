@@ -10,6 +10,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.paging.R
+import com.example.paging.architecture.adapter.ItemsDecoration
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState
@@ -51,6 +53,7 @@ class ItemListFragment(
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
             isMotionEventSplittingEnabled = false
+            addItemDecoration(ItemsDecoration(context, null, null, null, R.dimen.item_spacing))
 
             adapter = ItemListAdapter(viewLifecycleOwner).apply {
                 listener = this@ItemListFragment
