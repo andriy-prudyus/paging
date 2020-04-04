@@ -12,7 +12,7 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import kotlin.math.ceil
 
-abstract class BaseDataSource<V, N>(
+abstract class BasePageKeyedDataSource<V, N>(
     var initialPage: Int,
     private val scope: CoroutineScope
 ) : PageKeyedDataSource<Int, V>() {

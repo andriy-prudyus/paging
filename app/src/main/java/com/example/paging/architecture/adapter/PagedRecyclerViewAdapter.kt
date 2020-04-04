@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.example.paging.R
-import com.example.paging.architecture.dataSource.BaseDataSource
+import com.example.paging.architecture.dataSource.BasePageKeyedDataSource
 import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState.After
 import com.example.paging.architecture.state.PagingState.Before
@@ -222,7 +222,7 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
         }
 
         private fun reload(position: Int) {
-            (currentList?.dataSource as? BaseDataSource<T, *>)?.let { dataSource ->
+            (currentList?.dataSource as? BasePageKeyedDataSource<T, *>)?.let { dataSource ->
                 when (position) {
                     itemCount - 1 -> {
                         (loadAfterState as? After.Failure<Int, T>)?.let {

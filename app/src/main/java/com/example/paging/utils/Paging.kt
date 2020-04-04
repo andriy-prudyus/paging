@@ -9,7 +9,7 @@ import com.example.paging.ITEM_TOP_OFFSET
 import com.example.paging.PAGE
 import com.example.paging.PAGE_SIZE
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
-import com.example.paging.architecture.dataSource.BaseDataSource
+import com.example.paging.architecture.dataSource.BasePageKeyedDataSource
 
 fun pagedListConfig(): PagedList.Config {
     return PagedList.Config.Builder()
@@ -28,7 +28,7 @@ fun PagedRecyclerViewAdapter<*, *, *>.getState(): Bundle {
 
     val page = visibleItemPosition / (currentList?.config?.pageSize ?: 1) +
             if (
-                (currentList?.dataSource as? BaseDataSource<*, *>)?.initialPage ?: 0 > 1
+                (currentList?.dataSource as? BasePageKeyedDataSource<*, *>)?.initialPage ?: 0 > 1
                 && loadedBeforePage != 1
             ) {
                 loadedBeforePage
