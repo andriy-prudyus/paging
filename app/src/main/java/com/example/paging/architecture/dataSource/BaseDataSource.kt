@@ -3,19 +3,17 @@ package com.example.paging.architecture.dataSource
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PageKeyedDataSource
+import com.example.paging.PAGE_SIZE
 import com.example.paging.architecture.Optional
 import com.example.paging.architecture.exception.AppException
 import com.example.paging.architecture.exception.AppException.Code.*
 import com.example.paging.architecture.state.PagingState.*
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
+import kotlinx.coroutines.*
 import timber.log.Timber
 import kotlin.math.ceil
 
 abstract class BaseDataSource<V, N>(
-    private val initialPageIndex: Int,
+    var initialPage: Int,
     private val scope: CoroutineScope
 ) : PageKeyedDataSource<Int, V>() {
 
@@ -49,27 +47,29 @@ abstract class BaseDataSource<V, N>(
         (scope + exceptionHandler).launch {
             var (expectedCount) = getExpectedItemsCount()
             if (expectedCount == null) {
-                if (initialPageIndex > 1) throw AppException(INCORRECT_INITIAL_PAGE_INDEX)
+                if (initialPage > 1) throw AppException(INCORRECT_INITIAL_PAGE_INDEX)
 
-                val data = loadItems(initialPageIndex, params.requestedLoadSize)
-                saveItems(data)
+                for (i in initialPage until initialPage + params.requestedLoadSize / PAGE_SIZE) {
+                    yield()
+                    val data = loadItems(i, PAGE_SIZE)
+                    saveItems(data)
+                }
+
                 expectedCount = getExpectedItemsCount().value ?: 0
             }
 
-            val cachedItemsCount = getCachedItemsCount()
-            if (initialPageIndex > ceil((cachedItemsCount / params.requestedLoadSize).toDouble())) {
-                throw AppException(INCORRECT_INITIAL_PAGE_INDEX)
+            val items = mutableListOf<V>()
+            for (i in initialPage until initialPage + params.requestedLoadSize / PAGE_SIZE) {
+                items.addAll(getCachedItems(i, PAGE_SIZE))
             }
-
-            val items = getCachedItems(initialPageIndex, params.requestedLoadSize)
 
             callback.onResult(
                 items,
-                if (initialPageIndex == 1) null else initialPageIndex - 1,
-                if (expectedCount < (initialPageIndex - 1) * params.requestedLoadSize) {
+                if (initialPage == 1) null else initialPage - 1,
+                if (expectedCount < (initialPage - 1) * PAGE_SIZE + params.requestedLoadSize) {
                     null
                 } else {
-                    initialPageIndex + 1
+                    initialPage + params.requestedLoadSize / PAGE_SIZE
                 }
             )
 
@@ -104,7 +104,7 @@ abstract class BaseDataSource<V, N>(
             callback.onResult(
                 items,
                 if (params.key < ceil(expectedItemsCount.toDouble() / params.requestedLoadSize.toDouble())) {
-                    params.key + 1
+                    params.key + params.requestedLoadSize / PAGE_SIZE
                 } else {
                     null
                 }
@@ -125,7 +125,7 @@ abstract class BaseDataSource<V, N>(
         (scope + exceptionHandler).launch {
             val items = getCachedItems(params.key, params.requestedLoadSize)
             callback.onResult(items, if (params.key == 1) null else params.key - 1)
-            loadBefore.postValue(Before.Success())
+            loadBefore.postValue(Before.Success(params))
         }
     }
 }

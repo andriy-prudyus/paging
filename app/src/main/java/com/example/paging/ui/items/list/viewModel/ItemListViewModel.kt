@@ -8,7 +8,9 @@ import com.example.paging.architecture.viewModel.AssistedSavedStateViewModelFact
 import com.example.paging.ui.items.list.dataSource.ItemListDataSourceFactory
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.ui.items.list.repository.ItemListRepository
+import com.example.paging.utils.getPage
 import com.example.paging.utils.pagedListConfig
+import com.example.paging.utils.resetPagingState
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -22,10 +24,6 @@ class ItemListViewModel @AssistedInject constructor(
 ) : ViewModel() {
 
     companion object {
-        const val PAGE = "page"
-        const val ITEM_POSITION = "item_position"
-        const val ITEM_TOP_OFFSET = "item_top_offset"
-
         val pagedListConfig = pagedListConfig()
     }
 
@@ -33,12 +31,6 @@ class ItemListViewModel @AssistedInject constructor(
     interface Factory : AssistedSavedStateViewModelFactory<ItemListViewModel> {
         override fun create(state: SavedStateHandle): ItemListViewModel
     }
-
-    val itemPosition: Int
-        get() = state.get<Int>(ITEM_POSITION) ?: 0
-
-    val itemTopOffset: Int
-        get() = state.get<Int>(ITEM_TOP_OFFSET) ?: 0
 
     @Suppress("UNCHECKED_CAST")
     fun items(): LiveData<State<PagedList<Item>>> {
@@ -50,15 +42,16 @@ class ItemListViewModel @AssistedInject constructor(
     }
 
     private fun createPagedList(): LiveData<PagedList<Item>> {
-        val dataSourceFactory = ItemListDataSourceFactory(
-            (state.get<Int>(PAGE) ?: 1).also { Timber.e("createPagedList = $it") },
-            viewModelScope,
-            repository
-        )
-        return LivePagedListBuilder(dataSourceFactory, pagedListConfig).build()
+        val factory = ItemListDataSourceFactory(viewModelScope, repository) {
+            state.getPage()
+        }
+
+        return LivePagedListBuilder(factory, pagedListConfig).build()
     }
 
     fun refresh(): LiveData<State<Any>> {
+        state.resetPagingState()
+
         return MutableLiveData<State<Any>>().also { result ->
             result.value = State.Loading()
 
@@ -66,7 +59,7 @@ class ItemListViewModel @AssistedInject constructor(
                 Timber.e(e)
                 result.value = State.Failure(e)
             }).launch {
-                val data = repository.loadItems(1, pagedListConfig.pageSize)
+                val data = repository.loadItems(1, pagedListConfig.initialLoadSizeHint)
                 repository.refreshDataInDb(data)
                 result.value = State.Success(Any())
             }
