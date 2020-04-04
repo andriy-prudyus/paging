@@ -3,18 +3,23 @@ package com.example.paging.architecture.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
 import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
+import com.example.paging.R
 import com.example.paging.architecture.dataSource.BaseDataSource
+import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState.After
 import com.example.paging.architecture.state.PagingState.Before
 import com.example.paging.databinding.ListItemFailureBinding
 import com.example.paging.databinding.ListItemLoadingBinding
 import com.example.paging.utils.localizedErrorMessage
 
-abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
+abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : ViewBinding>(
+    private val lifecycleOwner: LifecycleOwner,
     callback: DiffUtil.ItemCallback<T>
 ) : PagedListAdapter<T, RecyclerView.ViewHolder>(callback) {
 
@@ -24,9 +29,14 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
         private const val TYPE_FAILURE = 2
     }
 
+    private var loadingBinding by AutoClearedValue<ListItemLoadingBinding> { lifecycleOwner }
+    private var failureBinding by AutoClearedValue<ListItemFailureBinding> { lifecycleOwner }
+
+    var loadedBeforePage = 0
+
     var loadAfterState: After<Int, T>? = null
         set(value) {
-            val position = itemCount - 1
+            val position = itemCount
 
             when (value) {
                 is After.Loading, is After.Failure -> {
@@ -36,7 +46,13 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
                         notifyItemChanged(position)
                     }
                 }
-                is After.Success -> notifyItemRemoved(position)
+                is After.Success -> {
+                    if (field is After.Loading) {
+                        notifyItemChanged(position - 1)
+                    } else {
+                        notifyItemRemoved(position)
+                    }
+                }
             }
 
             field = value
@@ -54,14 +70,28 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
                         notifyItemChanged(position)
                     }
                 }
-                is Before.Success -> notifyItemRemoved(position)
+                is Before.Success -> {
+                    loadedBeforePage = value.params.key
+                    notifyItemRemoved(position)
+                }
             }
 
             field = value
         }
 
-    protected abstract fun onCreateRegularViewHolder(parent: ViewGroup): VH
+    var recyclerView: RecyclerView? = null
+
+    protected abstract fun onCreateRegularViewHolder(parent: ViewGroup, binding: VB): VH
     protected abstract fun onBindRegularViewHolder(holder: VH, position: Int)
+    protected abstract fun getRegularViewHolderCreator(lifecycleOwner: LifecycleOwner): ViewHolderCreator<VH, VB>
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = recyclerView
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = null
+    }
 
     override fun onCurrentListChanged(previousList: PagedList<T>?, currentList: PagedList<T>?) {
         loadAfterState = null
@@ -101,25 +131,14 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
         viewType: Int
     ): RecyclerView.ViewHolder {
         return when (viewType) {
-            TYPE_REGULAR -> onCreateRegularViewHolder(parent)
+            TYPE_REGULAR -> getRegularViewHolderCreator(lifecycleOwner).createViewHolder(parent)
             TYPE_LOADING -> {
                 LoadingViewHolder(
-                    ListItemLoadingBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.list_item_loading, parent, false)
                 )
             }
-            TYPE_FAILURE -> {
-                FailureViewHolder(
-                    ListItemFailureBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
-                )
-            }
+            TYPE_FAILURE -> getFailureViewHolderCreator().createViewHolder(parent)
             else -> throw IllegalArgumentException("Unknown viewType $viewType")
         }
     }
@@ -141,12 +160,16 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
                 when (position) {
                     itemCount - 1 -> {
                         (loadAfterState as? After.Failure<Int, T>)?.let {
-                            (holder as? PagedRecyclerViewAdapter<T, VH>.FailureViewHolder)?.bind(it.throwable)
+                            (holder as? PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder)?.bind(
+                                it.throwable
+                            )
                         }
                     }
                     0 -> {
                         (loadBeforeState as? Before.Failure<Int, T>)?.let {
-                            (holder as? PagedRecyclerViewAdapter<T, VH>.FailureViewHolder)?.bind(it.throwable)
+                            (holder as? PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder)?.bind(
+                                it.throwable
+                            )
                         }
                     }
                 }
@@ -159,13 +182,32 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder>(
         }
     }
 
-    class LoadingViewHolder(
-        binding: ListItemLoadingBinding
-    ) : RecyclerView.ViewHolder(binding.root)
+    private fun getFailureViewHolderCreator(): ViewHolderCreator<FailureViewHolder, ListItemFailureBinding> {
+        return object : ViewHolderCreator<FailureViewHolder, ListItemFailureBinding>(
+            lifecycleOwner
+        ) {
+
+            override fun createBinding(parent: ViewGroup): ListItemFailureBinding {
+                return ListItemFailureBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            }
+
+            override fun createViewHolder(
+                binding: ListItemFailureBinding
+            ): PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder {
+                return FailureViewHolder(binding)
+            }
+        }
+    }
+
+    class LoadingViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
     inner class FailureViewHolder(
-        private val binding: ListItemFailureBinding
-    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+        binding: ListItemFailureBinding
+    ) : BaseViewHolder<ListItemFailureBinding>(binding), View.OnClickListener {
 
         init {
             binding.root.setOnClickListener(this)

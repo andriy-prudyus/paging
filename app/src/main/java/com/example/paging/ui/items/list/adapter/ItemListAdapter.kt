@@ -3,15 +3,34 @@ package com.example.paging.ui.items.list.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.DiffUtil
+import com.example.paging.architecture.adapter.BaseViewHolder
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
+import com.example.paging.architecture.adapter.ViewHolderCreator
 import com.example.paging.databinding.ListItemBinding
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.utils.load
 
 class ItemListAdapter(
-    itemCallback: DiffUtilItemCallback
-) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder>(itemCallback) {
+    lifecycleOwner: LifecycleOwner
+) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder, ListItemBinding>(
+    lifecycleOwner,
+    itemCallback
+) {
+
+    companion object {
+        private val itemCallback = object : DiffUtil.ItemCallback<Item>() {
+
+            override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
 
     interface ActionListener {
         fun onItemClicked(item: Item)
@@ -19,14 +38,30 @@ class ItemListAdapter(
 
     var listener: ActionListener? = null
 
-    override fun onCreateRegularViewHolder(parent: ViewGroup): ItemViewHolder {
-        return ItemViewHolder(
-            ListItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-        )
+    override fun getRegularViewHolderCreator(
+        lifecycleOwner: LifecycleOwner
+    ): ViewHolderCreator<ItemViewHolder, ListItemBinding> {
+        return object : ViewHolderCreator<ItemViewHolder, ListItemBinding>(lifecycleOwner) {
+
+            override fun createBinding(parent: ViewGroup): ListItemBinding {
+                return ListItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            }
+
+            override fun createViewHolder(binding: ListItemBinding): ItemViewHolder {
+                return ItemViewHolder(binding)
+            }
+        }
+    }
+
+    override fun onCreateRegularViewHolder(
+        parent: ViewGroup,
+        binding: ListItemBinding
+    ): ItemViewHolder {
+        return ItemViewHolder(binding)
     }
 
     override fun onBindRegularViewHolder(holder: ItemViewHolder, position: Int) {
@@ -34,8 +69,8 @@ class ItemListAdapter(
     }
 
     inner class ItemViewHolder(
-        private val binding: ListItemBinding
-    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+        binding: ListItemBinding
+    ) : BaseViewHolder<ListItemBinding>(binding), View.OnClickListener {
 
         private lateinit var item: Item
 

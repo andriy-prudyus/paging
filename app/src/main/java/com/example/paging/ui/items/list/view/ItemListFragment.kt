@@ -10,38 +10,35 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
+import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState
 import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFactory
 import com.example.paging.architecture.viewModel.ObserveSingleResult
 import com.example.paging.databinding.FragmentItemListBinding
-import com.example.paging.ui.items.list.adapter.DiffUtilItemCallback
 import com.example.paging.ui.items.list.adapter.ItemListAdapter
 import com.example.paging.ui.items.list.dataSource.ItemListDataSource
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.ui.items.list.viewModel.ItemListViewModel
-import com.example.paging.utils.saveRecyclerViewState
-import com.example.paging.utils.showError
-import com.example.paging.utils.showErrorSnackbar
+import com.example.paging.utils.*
 
 class ItemListFragment(
-    private val viewModelFactory: InjectingSavedStateViewModelFactory,
-    private val diffUtilItemCallback: DiffUtilItemCallback
+    private val viewModelFactory: InjectingSavedStateViewModelFactory
 ) : Fragment(), ItemListAdapter.ActionListener {
 
     private val viewModel by viewModels<ItemListViewModel> { viewModelFactory.create(this) }
 
-    private lateinit var binding: FragmentItemListBinding
+    private var binding by AutoClearedValue<FragmentItemListBinding> { viewLifecycleOwner }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return FragmentItemListBinding.inflate(inflater, container, false).let {
-            binding = it
-            it.root
-        }
+        return FragmentItemListBinding.inflate(inflater, container, false)
+            .also { binding = it }
+            .root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,7 +52,7 @@ class ItemListFragment(
             layoutManager = LinearLayoutManager(context)
             isMotionEventSplittingEnabled = false
 
-            adapter = ItemListAdapter(diffUtilItemCallback).apply {
+            adapter = ItemListAdapter(viewLifecycleOwner).apply {
                 listener = this@ItemListFragment
             }
         }
@@ -88,8 +85,8 @@ class ItemListFragment(
                     (binding.recyclerView.adapter as? ItemListAdapter)?.submitList(state.data) {
                         (binding.recyclerView.layoutManager as LinearLayoutManager)
                             .scrollToPositionWithOffset(
-                                viewModel.itemPosition,
-                                viewModel.itemTopOffset
+                                viewModel.state.getItemPosition(),
+                                viewModel.state.getItemTopOffset()
                             )
                     }
                 }
@@ -162,6 +159,9 @@ class ItemListFragment(
 
     override fun onPause() {
         super.onPause()
-        viewModel.saveRecyclerViewState(binding.recyclerView)
+
+        (binding.recyclerView.adapter as? PagedRecyclerViewAdapter<*, *, *>)?.getState()?.let {
+            viewModel.state.savePagingState(it)
+        }
     }
 }

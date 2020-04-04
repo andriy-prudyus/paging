@@ -34,7 +34,9 @@ sealed class PagingState<K, V> {
 
         class Loading<K, V> : Before<K, V>()
 
-        class Success<K, V> : Before<K, V>()
+        data class Success<K, V>(
+            val params: LoadParams<K>
+        ) : Before<K, V>()
 
         data class Failure<K, V>(
             val params: LoadParams<K>,

@@ -14,6 +14,7 @@ import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.InjectingSavedStateViewModelFactory
 import com.example.paging.databinding.FragmentItemDetailsBinding
 import com.example.paging.ui.items.details.viewModel.ItemDetailsViewModel
+import com.example.paging.utils.autoCleared
 import com.example.paging.utils.load
 import com.example.paging.utils.showError
 import com.example.paging.utils.showMessage
@@ -26,15 +27,16 @@ class ItemDetailsFragment(
         viewModelFactory.create(this, arguments)
     }
 
-    private lateinit var binding: FragmentItemDetailsBinding
+    private var binding by autoCleared<FragmentItemDetailsBinding>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentItemDetailsBinding.inflate(inflater, container, false)
-        return binding.root
+        return FragmentItemDetailsBinding.inflate(inflater, container, false)
+            .also { binding = it }
+            .root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

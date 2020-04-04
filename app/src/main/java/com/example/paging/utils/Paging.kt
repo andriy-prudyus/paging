@@ -1,25 +1,44 @@
 package com.example.paging.utils
 
+import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.paging.PagedList
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.paging.ITEM_POSITION
+import com.example.paging.ITEM_TOP_OFFSET
+import com.example.paging.PAGE
 import com.example.paging.PAGE_SIZE
-import kotlin.math.ceil
+import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
+import com.example.paging.architecture.dataSource.BaseDataSource
 
-fun pagedListConfig(
-    enablePlaceholders: Boolean = true,
-    pageSize: Int = PAGE_SIZE
-): PagedList.Config {
+fun pagedListConfig(): PagedList.Config {
     return PagedList.Config.Builder()
-        .setEnablePlaceholders(enablePlaceholders)
-        .setPageSize(pageSize)
-        .setInitialLoadSizeHint(pageSize)
-        .setPrefetchDistance(pageSize)
+        .setEnablePlaceholders(false)
+        .setPageSize(PAGE_SIZE)
+        .setInitialLoadSizeHint(PAGE_SIZE * 2)
+        .setPrefetchDistance(PAGE_SIZE)
         .build()
 }
 
-fun calculateInitialPage(itemPosition: Int, pageSize: Int): Int {
-    return if (itemPosition == 0) {
-        1
-    } else {
-        ceil(itemPosition.toDouble() / pageSize.toDouble()).toInt()
-    }
+fun PagedRecyclerViewAdapter<*, *, *>.getState(): Bundle {
+    val layoutManager = recyclerView!!.layoutManager as LinearLayoutManager
+    val visibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+    val itemPosition = (visibleItemPosition % (currentList?.config?.pageSize ?: 0))
+    val itemTopOffset = layoutManager.findViewByPosition(visibleItemPosition)?.top ?: 0
+
+    val page = visibleItemPosition / (currentList?.config?.pageSize ?: 1) +
+            if (
+                (currentList?.dataSource as? BaseDataSource<*, *>)?.initialPage ?: 0 > 1
+                && loadedBeforePage != 1
+            ) {
+                loadedBeforePage
+            } else {
+                1
+            }
+
+    return bundleOf(
+        PAGE to page,
+        ITEM_POSITION to itemPosition,
+        ITEM_TOP_OFFSET to itemTopOffset
+    )
 }
