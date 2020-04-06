@@ -12,7 +12,7 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import kotlin.math.ceil
 
-abstract class BaseDataSource<V, N>(
+abstract class BasePageKeyedDataSource<V, N>(
     var initialPage: Int,
     private val scope: CoroutineScope
 ) : PageKeyedDataSource<Int, V>() {
@@ -65,6 +65,8 @@ abstract class BaseDataSource<V, N>(
 
             callback.onResult(
                 items,
+                (initialPage - 1) * PAGE_SIZE,
+                expectedCount,
                 if (initialPage == 1) null else initialPage - 1,
                 if (expectedCount < (initialPage - 1) * PAGE_SIZE + params.requestedLoadSize) {
                     null

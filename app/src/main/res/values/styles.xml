@@ -1,18 +1,21 @@
 <resources>
-
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
+        <item name="colorFragmentBackground">#ffeeeeee</item>
+        <item name="colorItemBackground">@android:color/white</item>
+
         <item name="colorTextRegular">#757575</item>
         <item name="colorTextInactive">#BDBDBD</item>
 
         <item name="colorIconRegular">#757575</item>
+
+        <item name="colorPlaceholder">?colorTextInactive</item>
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item>
     </style>
-
 </resources>

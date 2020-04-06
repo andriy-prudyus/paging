@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import com.example.paging.R
 import com.example.paging.architecture.adapter.BaseViewHolder
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.architecture.adapter.ViewHolderCreator
@@ -64,6 +66,13 @@ class ItemListAdapter(
         return ItemViewHolder(binding)
     }
 
+    override fun getPlaceholderViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
+        return PlaceholderViewHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.list_item_placeholder, parent, false)
+        )
+    }
+
     override fun onBindRegularViewHolder(holder: ItemViewHolder, position: Int) {
         getItem(position)?.let { holder.bind(it) }
     }
@@ -88,4 +97,6 @@ class ItemListAdapter(
             listener?.onItemClicked(item)
         }
     }
+
+    class PlaceholderViewHolder(view: View) : RecyclerView.ViewHolder(view)
 }

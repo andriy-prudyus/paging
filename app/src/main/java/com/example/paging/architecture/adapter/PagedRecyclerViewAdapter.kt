@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.example.paging.R
-import com.example.paging.architecture.dataSource.BaseDataSource
+import com.example.paging.architecture.dataSource.BasePageKeyedDataSource
 import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState.After
 import com.example.paging.architecture.state.PagingState.Before
@@ -27,6 +27,7 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
         private const val TYPE_REGULAR = 0
         private const val TYPE_LOADING = 1
         private const val TYPE_FAILURE = 2
+        private const val TYPE_PLACEHOLDER = 3
     }
 
     private var loadingBinding by AutoClearedValue<ListItemLoadingBinding> { lifecycleOwner }
@@ -36,6 +37,10 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
 
     var loadAfterState: After<Int, T>? = null
         set(value) {
+            if (currentList?.config?.enablePlaceholders == true) {
+                return
+            }
+
             val position = itemCount
 
             when (value) {
@@ -60,6 +65,10 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
 
     var loadBeforeState: Before<Int, T>? = null
         set(value) {
+            if (currentList?.config?.enablePlaceholders == true) {
+                return
+            }
+
             val position = 0
 
             when (value) {
@@ -100,29 +109,38 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
 
     override fun getItemCount(): Int {
         return super.getItemCount() +
-                loadAfterState.let { if (it != null && it !is After.Success) 1 else 0 } +
-                loadBeforeState.let { if (it != null && it !is Before.Success) 1 else 0 }
+                if (currentList?.config?.enablePlaceholders == true) {
+                    0
+                } else {
+                    loadAfterState.let { if (it != null && it !is After.Success) 1 else 0 } +
+                            loadBeforeState.let { if (it != null && it !is Before.Success) 1 else 0 }
+                }
     }
 
     override fun getItemViewType(position: Int): Int {
-        val itemCount = itemCount
-
-        return when (position) {
-            itemCount - 1 -> {
-                when (loadAfterState) {
-                    null, is After.Success -> TYPE_REGULAR
-                    is After.Loading -> TYPE_LOADING
-                    is After.Failure -> TYPE_FAILURE
-                }
+        return if (currentList?.config?.enablePlaceholders == true) {
+            when (getItem(position)) {
+                null -> TYPE_PLACEHOLDER
+                else -> TYPE_REGULAR
             }
-            0 -> {
-                when (loadBeforeState) {
-                    null, is Before.Success -> TYPE_REGULAR
-                    is Before.Loading -> TYPE_LOADING
-                    is Before.Failure -> TYPE_FAILURE
+        } else {
+            when (position) {
+                itemCount - 1 -> {
+                    when (loadAfterState) {
+                        null, is After.Success -> TYPE_REGULAR
+                        is After.Loading -> TYPE_LOADING
+                        is After.Failure -> TYPE_FAILURE
+                    }
                 }
+                0 -> {
+                    when (loadBeforeState) {
+                        null, is Before.Success -> TYPE_REGULAR
+                        is Before.Loading -> TYPE_LOADING
+                        is Before.Failure -> TYPE_FAILURE
+                    }
+                }
+                else -> TYPE_REGULAR
             }
-            else -> TYPE_REGULAR
         }
     }
 
@@ -139,41 +157,48 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
                 )
             }
             TYPE_FAILURE -> getFailureViewHolderCreator().createViewHolder(parent)
+            TYPE_PLACEHOLDER -> getPlaceholderViewHolder(parent)
             else -> throw IllegalArgumentException("Unknown viewType $viewType")
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     final override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val viewType = getItemViewType(position)) {
-            TYPE_REGULAR -> {
-                onBindRegularViewHolder(
-                    holder as VH,
-                    if (loadBeforeState != null && loadBeforeState !is Before.Success) {
-                        position - 1
-                    } else {
-                        position
+
+        fun bindRegularViewHolder() {
+            onBindRegularViewHolder(
+                holder as VH,
+                if (loadBeforeState != null && loadBeforeState !is Before.Success) {
+                    position - 1
+                } else {
+                    position
+                }
+            )
+        }
+
+        fun bindFailureViewHolder() {
+            when (position) {
+                itemCount - 1 -> {
+                    (loadAfterState as? After.Failure<Int, T>)?.let {
+                        (holder as? PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder)?.bind(
+                            it.throwable
+                        )
                     }
-                )
-            }
-            TYPE_FAILURE -> {
-                when (position) {
-                    itemCount - 1 -> {
-                        (loadAfterState as? After.Failure<Int, T>)?.let {
-                            (holder as? PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder)?.bind(
-                                it.throwable
-                            )
-                        }
-                    }
-                    0 -> {
-                        (loadBeforeState as? Before.Failure<Int, T>)?.let {
-                            (holder as? PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder)?.bind(
-                                it.throwable
-                            )
-                        }
+                }
+                0 -> {
+                    (loadBeforeState as? Before.Failure<Int, T>)?.let {
+                        (holder as? PagedRecyclerViewAdapter<T, VH, VB>.FailureViewHolder)?.bind(
+                            it.throwable
+                        )
                     }
                 }
             }
+        }
+
+        when (val viewType = getItemViewType(position)) {
+            TYPE_REGULAR -> bindRegularViewHolder()
+            TYPE_FAILURE -> bindFailureViewHolder()
+            TYPE_PLACEHOLDER -> onBindPlaceholderViewHolder(holder)
             else -> {
                 if (viewType != TYPE_LOADING) {
                     throw IllegalArgumentException("Incorrect viewType at position $position")
@@ -203,6 +228,14 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
         }
     }
 
+    protected open fun getPlaceholderViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
+        throw IllegalStateException("Placeholder ViewHolder is not implemented")
+    }
+
+    protected open fun onBindPlaceholderViewHolder(holder: RecyclerView.ViewHolder) {
+        // do nothing
+    }
+
     class LoadingViewHolder(view: View) : RecyclerView.ViewHolder(view)
 
     inner class FailureViewHolder(
@@ -222,7 +255,7 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
         }
 
         private fun reload(position: Int) {
-            (currentList?.dataSource as? BaseDataSource<T, *>)?.let { dataSource ->
+            (currentList?.dataSource as? BasePageKeyedDataSource<T, *>)?.let { dataSource ->
                 when (position) {
                     itemCount - 1 -> {
                         (loadAfterState as? After.Failure<Int, T>)?.let {

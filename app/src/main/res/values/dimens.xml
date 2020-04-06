@@ -2,6 +2,7 @@
 <resources>
     <dimen name="image_size">100dp</dimen>
     <dimen name="margin_regular">16dp</dimen>
+    <dimen name="item_spacing">1dp</dimen>
 
     <dimen name="text_small">12sp</dimen>
     <dimen name="text_medium">14sp</dimen>
