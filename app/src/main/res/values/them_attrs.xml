@@ -7,4 +7,6 @@
     <attr name="colorTextInactive" format="color" />
 
     <attr name="colorIconRegular" format="color" />
+
+    <attr name="colorPlaceholder" format="color" />
 </resources>

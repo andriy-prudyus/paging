@@ -3,6 +3,7 @@ package com.example.paging.ui.items.list.viewModel
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import com.example.paging.INITIAL_LOAD_SIZE_HINT
 import com.example.paging.architecture.state.State
 import com.example.paging.architecture.viewModel.AssistedSavedStateViewModelFactory
 import com.example.paging.ui.items.list.dataSource.ItemListDataSourceFactory
@@ -23,30 +24,24 @@ class ItemListViewModel @AssistedInject constructor(
     private val repository: ItemListRepository
 ) : ViewModel() {
 
-    companion object {
-        val pagedListConfig = pagedListConfig()
-    }
-
     @AssistedInject.Factory
     interface Factory : AssistedSavedStateViewModelFactory<ItemListViewModel> {
         override fun create(state: SavedStateHandle): ItemListViewModel
     }
 
+    private val factory = ItemListDataSourceFactory(viewModelScope, repository) { state.getPage() }
+    private val pagedList = MediatorLiveData<PagedList<Item>>()
+
     @Suppress("UNCHECKED_CAST")
     fun items(): LiveData<State<PagedList<Item>>> {
-        return (Transformations.map(createPagedList()) {
-            State.Success(it)
+        pagedList.value = null
+        buildPagedList()
+
+        return (Transformations.map(pagedList) {
+            it?.let { State.Success(it) }
         } as MutableLiveData<State<PagedList<Item>>>).apply {
             value = State.Loading()
         }
-    }
-
-    private fun createPagedList(): LiveData<PagedList<Item>> {
-        val factory = ItemListDataSourceFactory(viewModelScope, repository) {
-            state.getPage()
-        }
-
-        return LivePagedListBuilder(factory, pagedListConfig).build()
     }
 
     fun refresh(): LiveData<State<Any>> {
@@ -59,9 +54,26 @@ class ItemListViewModel @AssistedInject constructor(
                 Timber.e(e)
                 result.value = State.Failure(e)
             }).launch {
-                val data = repository.loadItems(1, pagedListConfig.initialLoadSizeHint)
+                val data = repository.loadItems(1, INITIAL_LOAD_SIZE_HINT)
                 repository.refreshDataInDb(data)
+                buildPagedList()
                 result.value = State.Success(Any())
+            }
+        }
+    }
+
+    private fun buildPagedList() {
+        viewModelScope.launch {
+            val (expectedCount) = repository.getExpectedItemsCount()
+            val cachedCount = repository.getCachedItemsCount()
+
+            pagedList.addSource(
+                LivePagedListBuilder(
+                    factory,
+                    pagedListConfig(enablePlaceholders = expectedCount == cachedCount)
+                ).build()
+            ) {
+                pagedList.value = it
             }
         }
     }

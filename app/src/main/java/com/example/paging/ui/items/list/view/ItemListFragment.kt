@@ -88,7 +88,11 @@ class ItemListFragment(
                     (binding.recyclerView.adapter as? ItemListAdapter)?.submitList(state.data) {
                         (binding.recyclerView.layoutManager as LinearLayoutManager)
                             .scrollToPositionWithOffset(
-                                viewModel.state.getItemPosition(),
+                                if (state.data.config.enablePlaceholders) {
+                                    viewModel.state.getItemPositionAbsolute()
+                                } else {
+                                    viewModel.state.getItemPositionRelative()
+                                },
                                 viewModel.state.getItemTopOffset()
                             )
                     }
@@ -141,11 +145,7 @@ class ItemListFragment(
             liveData.observe(viewLifecycleOwner, object : ObserveSingleResult<Any>(liveData) {
                 override fun onChange(state: State<Any>) {
                     when (state) {
-                        is State.Success -> {
-                            binding.swipeRefreshLayout.isRefreshing = false
-                            (binding.recyclerView.adapter as? ItemListAdapter)?.currentList
-                                ?.dataSource?.invalidate()
-                        }
+                        is State.Success -> binding.swipeRefreshLayout.isRefreshing = false
                         is State.Failure -> {
                             binding.swipeRefreshLayout.isRefreshing = false
                             view?.let { showErrorSnackbar(it, state.throwable) }

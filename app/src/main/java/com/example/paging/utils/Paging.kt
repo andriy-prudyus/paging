@@ -4,41 +4,47 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.paging.ITEM_POSITION
-import com.example.paging.ITEM_TOP_OFFSET
-import com.example.paging.PAGE
-import com.example.paging.PAGE_SIZE
+import com.example.paging.*
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.architecture.dataSource.BasePageKeyedDataSource
 
-fun pagedListConfig(): PagedList.Config {
+fun pagedListConfig(enablePlaceholders: Boolean = false): PagedList.Config {
     return PagedList.Config.Builder()
-        .setEnablePlaceholders(false)
+        .setEnablePlaceholders(enablePlaceholders)
         .setPageSize(PAGE_SIZE)
-        .setInitialLoadSizeHint(PAGE_SIZE * 2)
+        .setInitialLoadSizeHint(INITIAL_LOAD_SIZE_HINT)
         .setPrefetchDistance(PAGE_SIZE)
         .build()
 }
 
 fun PagedRecyclerViewAdapter<*, *, *>.getState(): Bundle {
+    val pageSize = currentList?.config?.pageSize ?: PAGE_SIZE
+    val initialPage = (currentList?.dataSource as? BasePageKeyedDataSource<*, *>)?.initialPage ?: 1
+    val enablePlaceholders = currentList?.config?.enablePlaceholders ?: false
     val layoutManager = recyclerView!!.layoutManager as LinearLayoutManager
     val visibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-    val itemPosition = (visibleItemPosition % (currentList?.config?.pageSize ?: 0))
+    val positionRelative = (visibleItemPosition % pageSize)
     val itemTopOffset = layoutManager.findViewByPosition(visibleItemPosition)?.top ?: 0
 
-    val page = visibleItemPosition / (currentList?.config?.pageSize ?: 1) +
-            if (
-                (currentList?.dataSource as? BasePageKeyedDataSource<*, *>)?.initialPage ?: 0 > 1
-                && loadedBeforePage != 1
-            ) {
+    val page = visibleItemPosition / pageSize +
+            if (initialPage > 1 && loadedBeforePage != 1 && !enablePlaceholders) {
                 loadedBeforePage
             } else {
                 1
             }
 
+    val positionAbsolute =
+        if (enablePlaceholders) {
+            visibleItemPosition
+        } else {
+            ((if (loadedBeforePage > 0) loadedBeforePage else initialPage) - 1) * pageSize +
+                    visibleItemPosition
+        }
+
     return bundleOf(
         PAGE to page,
-        ITEM_POSITION to itemPosition,
+        ITEM_POSITION_RELATIVE to positionRelative,
+        ITEM_POSITION_ABSOLUTE to positionAbsolute,
         ITEM_TOP_OFFSET to itemTopOffset
     )
 }

@@ -65,6 +65,8 @@ abstract class BasePageKeyedDataSource<V, N>(
 
             callback.onResult(
                 items,
+                (initialPage - 1) * PAGE_SIZE,
+                expectedCount,
                 if (initialPage == 1) null else initialPage - 1,
                 if (expectedCount < (initialPage - 1) * PAGE_SIZE + params.requestedLoadSize) {
                     null
