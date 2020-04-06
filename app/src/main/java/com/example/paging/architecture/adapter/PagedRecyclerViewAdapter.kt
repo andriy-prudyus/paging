@@ -15,7 +15,6 @@ import com.example.paging.architecture.delegate.AutoClearedValue
 import com.example.paging.architecture.state.PagingState.After
 import com.example.paging.architecture.state.PagingState.Before
 import com.example.paging.databinding.ListItemFailureBinding
-import com.example.paging.databinding.ListItemLoadingBinding
 import com.example.paging.utils.localizedErrorMessage
 
 abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : ViewBinding>(
@@ -30,7 +29,6 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
         private const val TYPE_PLACEHOLDER = 3
     }
 
-    private var loadingBinding by AutoClearedValue<ListItemLoadingBinding> { lifecycleOwner }
     private var failureBinding by AutoClearedValue<ListItemFailureBinding> { lifecycleOwner }
 
     var loadedBeforePage = 0

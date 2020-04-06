@@ -50,6 +50,8 @@ ext {
     junit_version = '4.13'
     ext_junit_version = '1.1.1'
     espresso_version = '3.2.0'
+    mockito_version = '3.3.0'
+    dexmaker_mockito_inline_version = '2.25.1'
 
     annotationProcessors = [
             room_compiler: "androidx.room:room-compiler:$room_version",
@@ -104,6 +106,9 @@ ext {
     testLibraries = [
             junit: "junit:junit:$junit_version",
             ext_junit: "androidx.test.ext:junit:$ext_junit_version",
+
+            mockito: "org.mockito:mockito-core:$mockito_version",
+            dexmaker_mockito_inline: "com.linkedin.dexmaker:dexmaker-mockito-inline:$dexmaker_mockito_inline_version",
 
             espresso_core: "androidx.test.espresso:espresso-core:$espresso_version"
     ]

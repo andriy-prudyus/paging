@@ -65,6 +65,8 @@ dependencies {
     debugImplementation libraries.leakcanary
 
     testImplementation testLibraries.junit
+    testImplementation testLibraries.mockito
+    testImplementation testLibraries.dexmaker_mockito_inline
 
     androidTestImplementation testLibraries.ext_junit
     androidTestImplementation testLibraries.espresso_core
