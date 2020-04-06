@@ -21,7 +21,7 @@ class ItemDetailsViewModel @AssistedInject constructor(
 ) : ViewModel() {
 
     companion object {
-        const val ITEM_ID = "itemId"
+        private const val ITEM_ID = "itemId"
     }
 
     @AssistedInject.Factory
