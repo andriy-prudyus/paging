@@ -1,6 +1,7 @@
 package com.example.paging
 
 import android.app.Application
+import com.example.paging.architecture.view.ActivityLifecycleCallback
 import com.example.paging.di.AppComponent
 import com.example.paging.di.DaggerAppComponent
 import com.facebook.stetho.Stetho
@@ -13,6 +14,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         initLogging()
+        registerActivityLifecycleCallbacks(ActivityLifecycleCallback())
     }
 
     private fun initLogging() {
