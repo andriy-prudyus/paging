@@ -10,11 +10,11 @@ import com.example.paging.architecture.exception.AppException.Code.*
 import com.example.paging.architecture.state.PagingState.*
 import kotlinx.coroutines.*
 import timber.log.Timber
-import kotlin.math.ceil
 
 abstract class BasePageKeyedDataSource<V, N>(
     var initialPage: Int,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val pageSize: Int = PAGE_SIZE
 ) : PageKeyedDataSource<Int, V>() {
 
     private val loadInitial = MutableLiveData<Initial<Int, V>>()
@@ -37,6 +37,38 @@ abstract class BasePageKeyedDataSource<V, N>(
         params: LoadInitialParams<Int>,
         callback: LoadInitialCallback<Int, V>
     ) {
+
+        suspend fun prepareExpectedItemsCount(scope: CoroutineScope): Int {
+            for (i in initialPage until initialPage + params.requestedLoadSize / pageSize) {
+                if (!scope.isActive) {
+                    break
+                }
+
+                val data = loadItems(i, pageSize)
+                saveItems(data)
+            }
+
+            return getExpectedItemsCount().value ?: 0
+        }
+
+        suspend fun prepareCachedItems(scope: CoroutineScope, expectedCount: Int): List<V> {
+            val items = mutableListOf<V>()
+
+            val to = (params.requestedLoadSize / pageSize).let {
+                val pageCount = expectedCount / pageSize + 1
+                if (initialPage + it > pageCount) pageCount - initialPage else it - 1
+            }
+
+            for (i in 0..to) {
+                if (!scope.isActive) {
+                    break
+                }
+                items.addAll(getCachedItems(initialPage + i, pageSize))
+            }
+
+            return items
+        }
+
         val exceptionHandler = CoroutineExceptionHandler { _, e ->
             Timber.e(e)
             loadInitial.postValue(Initial.Failure(params, callback, e))
@@ -48,30 +80,18 @@ abstract class BasePageKeyedDataSource<V, N>(
             var (expectedCount) = getExpectedItemsCount()
             if (expectedCount == null) {
                 if (initialPage > 1) throw AppException(INCORRECT_INITIAL_PAGE_INDEX)
-
-                for (i in initialPage until initialPage + params.requestedLoadSize / PAGE_SIZE) {
-                    yield()
-                    val data = loadItems(i, PAGE_SIZE)
-                    saveItems(data)
-                }
-
-                expectedCount = getExpectedItemsCount().value ?: 0
-            }
-
-            val items = mutableListOf<V>()
-            for (i in initialPage until initialPage + params.requestedLoadSize / PAGE_SIZE) {
-                items.addAll(getCachedItems(i, PAGE_SIZE))
+                expectedCount = prepareExpectedItemsCount(this)
             }
 
             callback.onResult(
-                items,
-                (initialPage - 1) * PAGE_SIZE,
+                prepareCachedItems(this, expectedCount),
+                (initialPage - 1) * pageSize,
                 expectedCount,
                 if (initialPage == 1) null else initialPage - 1,
-                if (expectedCount < (initialPage - 1) * PAGE_SIZE + params.requestedLoadSize) {
+                if (expectedCount < (initialPage - 1) * pageSize + params.requestedLoadSize) {
                     null
                 } else {
-                    initialPage + params.requestedLoadSize / PAGE_SIZE
+                    initialPage + params.requestedLoadSize / pageSize
                 }
             )
 
@@ -88,25 +108,23 @@ abstract class BasePageKeyedDataSource<V, N>(
         loadAfter.postValue(After.Loading())
 
         (scope + exceptionHandler).launch {
-            val expectedItemsCount = getExpectedItemsCount().value
+            val expectedCount = getExpectedItemsCount().value
                 ?: throw AppException(UNKNOWN_EXPECTED_ITEMS_COUNT)
 
-            val cachedItemsCount = getCachedItemsCount()
-            if (cachedItemsCount > expectedItemsCount) {
+            val cachedCount = getCachedItemsCount()
+            if (cachedCount > expectedCount) {
                 throw AppException(CACHED_ITEMS_MORE_THAN_EXPECTED)
             }
 
-            if (cachedItemsCount < params.key * params.requestedLoadSize) {
+            if (cachedCount < expectedCount && cachedCount < params.key * params.requestedLoadSize) {
                 val data = loadItems(params.key, params.requestedLoadSize)
                 saveItems(data)
             }
 
-            val items = getCachedItems(params.key, params.requestedLoadSize)
-
             callback.onResult(
-                items,
-                if (params.key < ceil(expectedItemsCount.toDouble() / params.requestedLoadSize.toDouble())) {
-                    params.key + params.requestedLoadSize / PAGE_SIZE
+                getCachedItems(params.key, params.requestedLoadSize),
+                if (params.key < expectedCount / params.requestedLoadSize + 1) {
+                    params.key + 1
                 } else {
                     null
                 }
