@@ -8,12 +8,15 @@ import com.example.paging.*
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
 import com.example.paging.architecture.dataSource.BasePageKeyedDataSource
 
-fun pagedListConfig(enablePlaceholders: Boolean = false): PagedList.Config {
+fun pagedListConfig(
+    enablePlaceholders: Boolean = false,
+    pageSize: Int = PAGE_SIZE
+): PagedList.Config {
     return PagedList.Config.Builder()
         .setEnablePlaceholders(enablePlaceholders)
-        .setPageSize(PAGE_SIZE)
+        .setPageSize(pageSize)
         .setInitialLoadSizeHint(INITIAL_LOAD_SIZE_HINT)
-        .setPrefetchDistance(PAGE_SIZE)
+        .setPrefetchDistance(pageSize)
         .build()
 }
 

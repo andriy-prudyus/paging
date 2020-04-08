@@ -227,7 +227,7 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
     }
 
     protected open fun getPlaceholderViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
-        throw IllegalStateException("Placeholder ViewHolder is not implemented")
+        throw NotImplementedError()
     }
 
     protected open fun onBindPlaceholderViewHolder(holder: RecyclerView.ViewHolder) {
