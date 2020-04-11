@@ -21,7 +21,7 @@ fun pagedListConfig(
 }
 
 fun PagedRecyclerViewAdapter<*, *, *>.getState(): Bundle {
-    val pageSize = currentList?.config?.pageSize ?: PAGE_SIZE
+    val pageSize = currentList?.config?.pageSize?.let { if (it < 1) PAGE_SIZE else it } ?: PAGE_SIZE
     val initialPage = (currentList?.dataSource as? BasePageKeyedDataSource<*, *>)?.initialPage ?: 1
     val enablePlaceholders = currentList?.config?.enablePlaceholders ?: false
     val layoutManager = recyclerView!!.layoutManager as LinearLayoutManager
