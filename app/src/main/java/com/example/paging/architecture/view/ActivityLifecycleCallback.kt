@@ -11,8 +11,11 @@ class ActivityLifecycleCallback : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
         activity.setTheme(R.style.AppTheme)
-        (activity.application as App).appComponent.inject(activity as MainActivity)
-        activity.supportFragmentManager.fragmentFactory = activity.fragmentFactory
+
+        (activity as? MainActivity)?.let {
+            (it.application as App).appComponent.inject(it)
+            it.supportFragmentManager.fragmentFactory = it.fragmentFactory
+        }
     }
 
     override fun onActivityPaused(activity: Activity) {}

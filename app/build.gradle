@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply from: "$rootDir/android.gradle"
 apply plugin: 'androidx.navigation.safeargs'
+apply plugin: 'de.mannodermaus.android-junit5'
 
 android {
     buildToolsVersion "29.0.3"
@@ -73,4 +74,16 @@ dependencies {
 
     androidTestImplementation testLibraries.ext_junit
     androidTestImplementation testLibraries.espresso_core
+    androidTestImplementation testLibraries.espressoContrib
+    androidTestImplementation testLibraries.mockkAndroid
+    androidTestImplementation testLibraries.archCoreTesting
+//    androidTestImplementation testLibraries.coroutinesTest
+//    androidTestImplementation testLibraries.mockito
+//    androidTestImplementation testLibraries.dexmaker_mockito_inline
+
+//    androidTestImplementation testLibraries.junitJupiterApi
+//    androidTestRuntimeOnly testLibraries.junitJupiterEngine
+//    androidTestImplementation testLibraries.junitJupiterParams
+
+    debugImplementation testLibraries.fragmentTesting
 }
