@@ -35,10 +35,6 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
 
     var loadAfterState: After<Int, T>? = null
         set(value) {
-            if (currentList?.config?.enablePlaceholders == true) {
-                return
-            }
-
             val position = itemCount
 
             when (value) {
@@ -63,10 +59,6 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
 
     var loadBeforeState: Before<Int, T>? = null
         set(value) {
-            if (currentList?.config?.enablePlaceholders == true) {
-                return
-            }
-
             val position = 0
 
             when (value) {
@@ -107,12 +99,8 @@ abstract class PagedRecyclerViewAdapter<T, VH : RecyclerView.ViewHolder, VB : Vi
 
     override fun getItemCount(): Int {
         return super.getItemCount() +
-                if (currentList?.config?.enablePlaceholders == true) {
-                    0
-                } else {
-                    loadAfterState.let { if (it != null && it !is After.Success) 1 else 0 } +
-                            loadBeforeState.let { if (it != null && it !is Before.Success) 1 else 0 }
-                }
+                loadAfterState.let { if (it != null && it !is After.Success) 1 else 0 } +
+                loadBeforeState.let { if (it != null && it !is Before.Success) 1 else 0 }
     }
 
     override fun getItemViewType(position: Int): Int {
