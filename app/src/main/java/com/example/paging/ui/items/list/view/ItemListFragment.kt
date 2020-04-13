@@ -130,13 +130,43 @@ class ItemListFragment(
 
     private fun observeLoadAfter(dataSource: ItemListDataSource) {
         dataSource.loadAfter().observe(viewLifecycleOwner, Observer { state ->
-            (binding.recyclerView.adapter as? ItemListAdapter)?.loadAfterState = state
+            val adapter = binding.recyclerView.adapter as? ItemListAdapter
+
+            when (state) {
+                is PagingState.After.Loading, is PagingState.After.Success -> {
+                    if (adapter?.currentList?.config?.enablePlaceholders == false) {
+                        adapter.loadAfterState = state
+                    }
+                }
+                is PagingState.After.Failure -> {
+                    if (adapter?.currentList?.config?.enablePlaceholders == false) {
+                        adapter.loadAfterState = state
+                    } else {
+                        view?.let { showErrorSnackbar(it, state.throwable) }
+                    }
+                }
+            }
         })
     }
 
     private fun observeLoadBefore(dataSource: ItemListDataSource) {
         dataSource.loadBefore().observe(viewLifecycleOwner, Observer { state ->
-            (binding.recyclerView.adapter as? ItemListAdapter)?.loadBeforeState = state
+            val adapter = binding.recyclerView.adapter as? ItemListAdapter
+
+            when (state) {
+                is PagingState.Before.Loading, is PagingState.Before.Success -> {
+                    if (adapter?.currentList?.config?.enablePlaceholders == false) {
+                        adapter.loadBeforeState = state
+                    }
+                }
+                is PagingState.Before.Failure -> {
+                    if (adapter?.currentList?.config?.enablePlaceholders == false) {
+                        adapter.loadBeforeState = state
+                    } else {
+                        view?.let { showErrorSnackbar(it, state.throwable) }
+                    }
+                }
+            }
         })
     }
 

@@ -8,14 +8,16 @@ import androidx.test.espresso.contrib.RecyclerViewActions.scrollToPosition
 import org.hamcrest.Matcher
 
 class RecyclerViewInteraction<T, out V : RecyclerView.ViewHolder>(
-    private val viewMatcher: Matcher<View>
+    private val viewMatcher: Matcher<View>,
+    private val startPosition: Int
 ) {
 
     companion object {
         fun <T, V : RecyclerView.ViewHolder> onRecyclerView(
-            viewMatcher: Matcher<View>
+            viewMatcher: Matcher<View>,
+            startPosition: Int = 0
         ): RecyclerViewInteraction<T, V> {
-            return RecyclerViewInteraction(viewMatcher)
+            return RecyclerViewInteraction(viewMatcher, startPosition)
         }
     }
 
@@ -28,9 +30,11 @@ class RecyclerViewInteraction<T, out V : RecyclerView.ViewHolder>(
 
     fun check(itemViewAssertion: ItemViewAssertion<T>): RecyclerViewInteraction<T, V> {
         items.forEachIndexed { index, item ->
+            val position = startPosition + index
+
             onView(viewMatcher)
-                .perform(scrollToPosition<V>(index))
-                .check(RecyclerItemViewAssertion(index, item, itemViewAssertion))
+                .perform(scrollToPosition<V>(position))
+                .check(RecyclerItemViewAssertion(position, item, itemViewAssertion))
         }
 
         return this
