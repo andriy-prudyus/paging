@@ -3,23 +3,17 @@ package com.example.paging.ui.items.list.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.paging.R
 import com.example.paging.architecture.adapter.BaseViewHolder
 import com.example.paging.architecture.adapter.PagedRecyclerViewAdapter
-import com.example.paging.architecture.adapter.ViewHolderCreator
 import com.example.paging.databinding.ListItemBinding
 import com.example.paging.ui.items.list.model.Item
 import com.example.paging.utils.load
 
-class ItemListAdapter(
-    lifecycleOwner: LifecycleOwner
-) : PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder, ListItemBinding>(
-    lifecycleOwner,
-    itemCallback
-) {
+class ItemListAdapter :
+    PagedRecyclerViewAdapter<Item, ItemListAdapter.ItemViewHolder, ListItemBinding>(itemCallback) {
 
     companion object {
         private val itemCallback = object : DiffUtil.ItemCallback<Item>() {
@@ -40,30 +34,16 @@ class ItemListAdapter(
 
     var listener: ActionListener? = null
 
-    override fun getRegularViewHolderCreator(
-        lifecycleOwner: LifecycleOwner
-    ): ViewHolderCreator<ItemViewHolder, ListItemBinding> {
-        return object : ViewHolderCreator<ItemViewHolder, ListItemBinding>(lifecycleOwner) {
-
-            override fun createBinding(parent: ViewGroup): ListItemBinding {
-                return ListItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                )
-            }
-
-            override fun createViewHolder(binding: ListItemBinding): ItemViewHolder {
-                return ItemViewHolder(binding)
-            }
-        }
-    }
-
     override fun onCreateRegularViewHolder(
-        parent: ViewGroup,
-        binding: ListItemBinding
+        parent: ViewGroup
     ): ItemViewHolder {
-        return ItemViewHolder(binding)
+        return ItemViewHolder(
+            ListItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
     }
 
     override fun getPlaceholderViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {

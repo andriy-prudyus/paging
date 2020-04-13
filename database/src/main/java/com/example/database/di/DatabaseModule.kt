@@ -10,11 +10,9 @@ import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-class DatabaseModule {
+object DatabaseModule {
 
-    companion object {
-        private const val DB_NAME = "database"
-    }
+    private const val DB_NAME = "database"
 
     @Singleton
     @Provides

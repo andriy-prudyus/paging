@@ -19,11 +19,11 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     api libraries.room
-    implementation libraries.room_ktx
-    kapt annotationProcessors.room_compiler
+    implementation libraries.roomKtx
+    kapt annotationProcessors.roomCompiler
 
     implementation libraries.dagger
-    kapt annotationProcessors.dagger_compiler
+    kapt annotationProcessors.daggerCompiler
 
-    androidTestImplementation testLibraries.ext_junit
+    androidTestImplementation testLibraries.extJunit
 }

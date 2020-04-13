@@ -14,13 +14,11 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
-class NetworkModule {
+object NetworkModule {
 
-    companion object {
-        private const val BASE_URL = "https://github.com"
-        private const val CONNECTION_TIMEOUT = 60L // seconds
-        private const val READ_TIMEOUT = 60L // seconds
-    }
+    private const val BASE_URL = "https://github.com"
+    private const val CONNECTION_TIMEOUT = 60L // seconds
+    private const val READ_TIMEOUT = 60L // seconds
 
     @Singleton
     @Provides

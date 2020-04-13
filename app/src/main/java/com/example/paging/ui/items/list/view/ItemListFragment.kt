@@ -55,7 +55,7 @@ class ItemListFragment(
             isMotionEventSplittingEnabled = false
             addItemDecoration(ItemsDecoration(context, null, null, null, R.dimen.item_spacing))
 
-            adapter = ItemListAdapter(viewLifecycleOwner).apply {
+            adapter = ItemListAdapter().apply {
                 listener = this@ItemListFragment
             }
         }
