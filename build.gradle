@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.3.71'
-    ext.navigation_version = '2.3.0-alpha04'
+    ext.kotlinVersion = '1.3.71'
+    ext.navigationVersion = '2.3.0-alpha04'
     ext.junit5Version = '1.4.2.0'
 
     repositories {
@@ -12,8 +12,8 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigation_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
         classpath "de.mannodermaus.gradle.plugins:android-junit5:$junit5Version"
     }
 }
@@ -31,89 +31,90 @@ task clean(type: Delete) {
 }
 
 ext {
-    appcompat_version = '1.1.0'
-    core_ktx_version = '1.2.0'
-    material_version = '1.1.0'
-    constraintlayout_version = '1.1.3'
-    swiperefreshlayout_version = '1.0.0'
-    paging_version = '2.1.2'
-    coil_version = '0.9.5'
-    lifecycle_version = '2.2.0'
-    gson_version = '2.8.6'
-    retrofit_version = '2.8.1'
-    stetho_version = '1.5.1'
-    coroutines_version = '1.3.4'
-    dagger_version = '2.27'
-    assisted_inject_dagger_version = '0.5.2'
-    room_version = '2.2.5'
-    timber_version = '4.7.1'
-    logging_interceptor_version = '4.5.0'
-    leakcanary_version = '2.2'
+    appcompatVersion = '1.1.0'
+    coreKtxVersion = '1.2.0'
+    materialVersion = '1.1.0'
+    constraintlayoutVersion = '1.1.3'
+    swiperefreshlayoutVersion = '1.0.0'
+    pagingVersion = '2.1.2'
+    glideVersion = '4.11.0'
+    lifecycleVersion = '2.2.0'
+    gsonVersion = '2.8.6'
+    retrofitVersion = '2.8.1'
+    stethoVersion = '1.5.1'
+    coroutinesVersion = '1.3.4'
+    daggerVersion = '2.27'
+    assistedInjectDaggerVersion = '0.5.2'
+    roomVersion = '2.2.5'
+    timberVersion = '4.7.1'
+    loggingInterceptorVersion = '4.5.0'
+    leakcanaryVersion = '2.2'
 
-    junit_version = '4.13'
-    ext_junit_version = '1.1.1'
+    junitVersion = '4.13'
+    extJunitVersion = '1.1.1'
     archCoreTestingVersion = '2.1.0'
-    espresso_version = '3.2.0'
-    mockito_version = '3.3.0'
+    espressoVersion = '3.2.0'
+    mockitoVersion = '3.3.0'
     mockkVersion = '1.9.3'
-    dexmaker_mockito_inline_version = '2.25.1'
+    dexmakerMockitoInlineVersion = '2.25.1'
     testCoroutineRuleVersion = '1.0.1'
     fragmentTestingVersion = '1.2.4'
     junitJupiterVersion = '5.3.2'
 
     annotationProcessors = [
-            room_compiler: "androidx.room:room-compiler:$room_version",
-            dagger_compiler: "com.google.dagger:dagger-compiler:$dagger_version",
-            assisted_inject_dagger_compiler: "com.squareup.inject:assisted-inject-processor-dagger2:$assisted_inject_dagger_version"
+            roomCompiler: "androidx.room:room-compiler:$roomVersion",
+            daggerCompiler: "com.google.dagger:dagger-compiler:$daggerVersion",
+            assistedInjectDaggerCompiler: "com.squareup.inject:assisted-inject-processor-dagger2:$assistedInjectDaggerVersion",
+            glideCompiler: "com.github.bumptech.glide:compiler:$glideVersion"
     ]
 
     libraries = [
-            kotlin: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version",
-            appcompat: "androidx.appcompat:appcompat:$appcompat_version",
-            core_ktx: "androidx.core:core-ktx:$core_ktx_version",
-            material: "com.google.android.material:material:$material_version",
-            constraintlayout: "androidx.constraintlayout:constraintlayout:$constraintlayout_version",
-            swiperefreshlayout: "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayout_version",
+            kotlin: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion",
+            appcompat: "androidx.appcompat:appcompat:$appcompatVersion",
+            coreKtx: "androidx.core:core-ktx:$coreKtxVersion",
+            material: "com.google.android.material:material:$materialVersion",
+            constraintlayout: "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion",
+            swiperefreshlayout: "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayoutVersion",
 
-            navigation_fragment: "androidx.navigation:navigation-fragment:$navigation_version",
-            navigation_fragment_ktx: "androidx.navigation:navigation-fragment-ktx:$navigation_version",
-            navigation_ui: "androidx.navigation:navigation-ui:$navigation_version",
-            navigation_ui_ktx: "androidx.navigation:navigation-ui-ktx:$navigation_version",
+            navigationFragment: "androidx.navigation:navigation-fragment:$navigationVersion",
+            navigationFragmentKtx: "androidx.navigation:navigation-fragment-ktx:$navigationVersion",
+            navigationUi: "androidx.navigation:navigation-ui:$navigationVersion",
+            navigationUiKtx: "androidx.navigation:navigation-ui-ktx:$navigationVersion",
 
-            paging: "androidx.paging:paging-runtime-ktx:$paging_version",
+            paging: "androidx.paging:paging-runtime-ktx:$pagingVersion",
 
-            coil: "io.coil-kt:coil:$coil_version",
+            glide: "com.github.bumptech.glide:glide:$glideVersion",
 
-            lifecycle_extensions: "androidx.lifecycle:lifecycle-extensions:$lifecycle_version",
-            lifecycle_livedata: "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version",
+            lifecycleExtensions: "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion",
+            lifecycleLivedata: "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion",
 
-            gson: "com.google.code.gson:gson:$gson_version",
+            gson: "com.google.code.gson:gson:$gsonVersion",
 
-            room: "androidx.room:room-runtime:$room_version",
-            room_ktx: "androidx.room:room-ktx:$room_version",
+            room: "androidx.room:room-runtime:$roomVersion",
+            roomKtx: "androidx.room:room-ktx:$roomVersion",
 
-            retrofit: "com.squareup.retrofit2:retrofit:$retrofit_version",
-            retrofit_converter_gson: "com.squareup.retrofit2:converter-gson:$retrofit_version",
+            retrofit: "com.squareup.retrofit2:retrofit:$retrofitVersion",
+            retrofitConverterGson: "com.squareup.retrofit2:converter-gson:$retrofitVersion",
 
-            stetho: "com.facebook.stetho:stetho:$stetho_version",
-            stetho_okhttp: "com.facebook.stetho:stetho-okhttp3:$stetho_version",
+            stetho: "com.facebook.stetho:stetho:$stethoVersion",
+            stethoOkhttp: "com.facebook.stetho:stetho-okhttp3:$stethoVersion",
 
-            coroutines_core: "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version",
-            coroutines_android: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version",
+            coroutinesCore: "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion",
+            coroutinesAndroid: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion",
 
-            dagger: "com.google.dagger:dagger:$dagger_version",
-            assisted_inject_dagger: "com.squareup.inject:assisted-inject-annotations-dagger2:$assisted_inject_dagger_version",
+            dagger: "com.google.dagger:dagger:$daggerVersion",
+            assistedInjectDagger: "com.squareup.inject:assisted-inject-annotations-dagger2:$assistedInjectDaggerVersion",
 
-            timber: "com.jakewharton.timber:timber:$timber_version",
+            timber: "com.jakewharton.timber:timber:$timberVersion",
 
-            logging_interceptor: "com.squareup.okhttp3:logging-interceptor:$logging_interceptor_version",
+            loggingInterceptor: "com.squareup.okhttp3:logging-interceptor:$loggingInterceptorVersion",
 
-            leakcanary: "com.squareup.leakcanary:leakcanary-android:$leakcanary_version"
+            leakcanary: "com.squareup.leakcanary:leakcanary-android:$leakcanaryVersion"
     ]
 
     testLibraries = [
-            junit: "junit:junit:$junit_version",
-            ext_junit: "androidx.test.ext:junit:$ext_junit_version",
+            junit: "junit:junit:$junitVersion",
+            extJunit: "androidx.test.ext:junit:$extJunitVersion",
             archCoreTesting: "androidx.arch.core:core-testing:$archCoreTestingVersion",
             fragmentTesting: "androidx.fragment:fragment-testing:$fragmentTestingVersion",
 
@@ -123,13 +124,13 @@ ext {
             junitJupiterEngine: "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion",
             junitJupiterParams: "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion",
 
-            mockito: "org.mockito:mockito-core:$mockito_version",
-            dexmaker_mockito_inline: "com.linkedin.dexmaker:dexmaker-mockito-inline:$dexmaker_mockito_inline_version",
+            mockito: "org.mockito:mockito-core:$mockitoVersion",
+            dexmakerMockitoInline: "com.linkedin.dexmaker:dexmaker-mockito-inline:$dexmakerMockitoInlineVersion",
 
-            espresso_core: "androidx.test.espresso:espresso-core:$espresso_version",
-            espressoContrib: "androidx.test.espresso:espresso-contrib:$espresso_version",
+            espressoCore: "androidx.test.espresso:espresso-core:$espressoVersion",
+            espressoContrib: "androidx.test.espresso:espresso-contrib:$espressoVersion",
 
-            coroutinesTest: "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version",
+            coroutinesTest: "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion",
             testCoroutineRule: "com.github.marcinOz:TestCoroutineRule:$testCoroutineRuleVersion"
     ]
 }

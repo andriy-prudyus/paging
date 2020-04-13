@@ -5,12 +5,12 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation libraries.dagger
-    kapt annotationProcessors.dagger_compiler
+    kapt annotationProcessors.daggerCompiler
 
     implementation libraries.retrofit
-    api libraries.retrofit_converter_gson
+    api libraries.retrofitConverterGson
 
-    implementation libraries.stetho_okhttp
+    implementation libraries.stethoOkhttp
     implementation libraries.timber
-    implementation libraries.logging_interceptor
+    implementation libraries.loggingInterceptor
 }

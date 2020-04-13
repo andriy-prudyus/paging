@@ -758,6 +758,111 @@ class ItemListFragmentTest {
         checkRecyclerViewItems(List(1) { Any() }, items.size + 1, loadingAssertion)
     }
 
+    @Test
+    fun observeInitial_stateSuccess_placeholders_beforeStateSuccess_noAfterState() {
+        val loadBefore = MutableLiveData<PagingState.Before<Int, Item>>()
+        val loadInitialItems = getItems(2) + getItems(3)
+        val loadBeforeItems = getItems(1)
+        val spyDataSource = spyk(ItemListDataSource(2, GlobalScope, mockRepository))
+
+        val slotLoadInitialCallback = slot<PageKeyedDataSource.LoadInitialCallback<Int, Item>>()
+        every { spyDataSource.loadInitial(any(), capture(slotLoadInitialCallback)) } answers {
+            slotLoadInitialCallback.captured.onResult(
+                loadInitialItems,
+                PAGE_SIZE,
+                ITEMS_COUNT,
+                1,
+                null
+            )
+        }
+
+        val slotLoadBeforeParams = slot<PageKeyedDataSource.LoadParams<Int>>()
+        val slotLoadBeforeCallback = slot<PageKeyedDataSource.LoadCallback<Int, Item>>()
+        every {
+            spyDataSource.loadBefore(
+                capture(slotLoadBeforeParams),
+                capture(slotLoadBeforeCallback)
+            )
+        } returns Unit
+
+        every { spyDataSource.loadInitial() } returns MutableLiveData(PagingState.Initial.Success())
+        every { spyDataSource.loadBefore() } returns loadBefore
+        every { mockDataSourceFactory.create() } returns spyDataSource
+        every { mockSavedStateHandle.getItemPositionAbsolute() } returns 0
+        every { mockSavedStateHandle.getItemTopOffset() } returns 0
+        every { mockViewModel.items() } returns MutableLiveData(State.Success(getPagedList(true)))
+
+        lateinit var fragment: Fragment
+        launchFragmentInContainer<ItemListFragment>(null, R.style.AppTheme, fragmentFactory)
+            .also { scenario ->
+                scenario.onFragment { fragment = it }
+            }
+
+        fragment.activity?.runOnUiThread {
+            slotLoadBeforeCallback.captured.onResult(loadBeforeItems, null)
+            loadBefore.value = PagingState.Before.Success(slotLoadBeforeParams.captured)
+        }
+
+        val items = loadBeforeItems + loadInitialItems
+        checkRecyclerViewItems(items, 0, itemAssertion)
+        checkRecyclerViewItems(
+            List(ITEMS_COUNT - items.size) { Any() },
+            items.size,
+            placeholderAssertion
+        )
+    }
+
+    @Test
+    fun observeInitial_stateSuccess_placeholders_beforeStateFailure_noAfterState() {
+        val loadBefore = MutableLiveData<PagingState.Before<Int, Item>>()
+        val items = getItems(2) + getItems(3)
+        val spyDataSource = spyk(ItemListDataSource(2, GlobalScope, mockRepository))
+
+        val slotLoadInitialCallback = slot<PageKeyedDataSource.LoadInitialCallback<Int, Item>>()
+        every { spyDataSource.loadInitial(any(), capture(slotLoadInitialCallback)) } answers {
+            slotLoadInitialCallback.captured.onResult(items, PAGE_SIZE, ITEMS_COUNT, 1, null)
+        }
+
+        val slotBeforeParams = slot<PageKeyedDataSource.LoadParams<Int>>()
+        val slotBeforeCallback = slot<PageKeyedDataSource.LoadCallback<Int, Item>>()
+        every {
+            spyDataSource.loadBefore(
+                capture(slotBeforeParams),
+                capture(slotBeforeCallback)
+            )
+        } returns Unit
+
+        every { spyDataSource.loadInitial() } returns MutableLiveData(PagingState.Initial.Success())
+        every { spyDataSource.loadBefore() } returns loadBefore
+        every { mockDataSourceFactory.create() } returns spyDataSource
+        every { mockSavedStateHandle.getItemPositionAbsolute() } returns 0
+        every { mockSavedStateHandle.getItemTopOffset() } returns 0
+        every { mockViewModel.items() } returns MutableLiveData(State.Success(getPagedList(true)))
+
+        lateinit var fragment: Fragment
+        launchFragmentInContainer<ItemListFragment>(null, R.style.AppTheme, fragmentFactory)
+            .also { scenario ->
+                scenario.onFragment { fragment = it }
+            }
+
+        onView(withId(R.id.recyclerView))
+            .perform(scrollToPosition<RecyclerView.ViewHolder>(items.size - 1))
+
+        fragment.activity?.runOnUiThread {
+            loadBefore.value = PagingState.Before.Failure(
+                slotBeforeParams.captured,
+                slotBeforeCallback.captured,
+                AppException(INCORRECT_INITIAL_PAGE_INDEX)
+            )
+        }
+
+        onView(withId(com.google.android.material.R.id.snackbar_text))
+            .check(matches(withText(R.string.error_incorrect_initial_page_index)))
+
+        checkRecyclerViewItems(List(PAGE_SIZE) { Any() }, 0, placeholderAssertion)
+        checkRecyclerViewItems(items, PAGE_SIZE, itemAssertion)
+    }
+
     private fun <T> checkRecyclerViewItems(
         items: List<T>, startPosition: Int,
         itemAssertion: RecyclerViewInteraction.ItemViewAssertion<T>

@@ -35,30 +35,31 @@ dependencies {
     implementation project(':database')
 
     implementation libraries.appcompat
-    implementation libraries.core_ktx
+    implementation libraries.coreKtx
     implementation libraries.material
     implementation libraries.constraintlayout
     implementation libraries.swiperefreshlayout
 
-    implementation libraries.navigation_fragment
-    implementation libraries.navigation_fragment_ktx
-    implementation libraries.navigation_ui
-    implementation libraries.navigation_ui_ktx
+    implementation libraries.navigationFragment
+    implementation libraries.navigationFragmentKtx
+    implementation libraries.navigationUi
+    implementation libraries.navigationUiKtx
 
     implementation libraries.paging
 
-    implementation libraries.coil
+    implementation libraries.glide
+    kapt annotationProcessors.glideCompiler
 
-    implementation libraries.lifecycle_extensions
-    implementation libraries.lifecycle_livedata
+    implementation libraries.lifecycleExtensions
+    implementation libraries.lifecycleLivedata
 
-    implementation libraries.coroutines_core
-    implementation libraries.coroutines_android
+    implementation libraries.coroutinesCore
+    implementation libraries.coroutinesAndroid
 
     implementation libraries.dagger
-    compileOnly libraries.assisted_inject_dagger
-    kapt annotationProcessors.dagger_compiler
-    kapt annotationProcessors.assisted_inject_dagger_compiler
+    compileOnly libraries.assistedInjectDagger
+    kapt annotationProcessors.daggerCompiler
+    kapt annotationProcessors.assistedInjectDaggerCompiler
 
     implementation libraries.timber
     implementation libraries.stetho
@@ -67,13 +68,13 @@ dependencies {
 
     testImplementation testLibraries.junit
     testImplementation testLibraries.mockito
-    testImplementation testLibraries.dexmaker_mockito_inline
+    testImplementation testLibraries.dexmakerMockitoInline
     testImplementation testLibraries.archCoreTesting
     testImplementation testLibraries.coroutinesTest
     testImplementation testLibraries.testCoroutineRule
 
-    androidTestImplementation testLibraries.ext_junit
-    androidTestImplementation testLibraries.espresso_core
+    androidTestImplementation testLibraries.extJunit
+    androidTestImplementation testLibraries.espressoCore
     androidTestImplementation testLibraries.espressoContrib
     androidTestImplementation testLibraries.mockkAndroid
     androidTestImplementation testLibraries.archCoreTesting
